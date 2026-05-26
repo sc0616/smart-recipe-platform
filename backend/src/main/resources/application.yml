@@ -1,0 +1,104 @@
+server:
+  # 后端端口。改为 8081 以避免与本机其他项目的 8080 冲突。
+  # 若需回退到 8080，请同步修改 frontend/vite.config.js 中 proxy 的 target。
+  port: 8081
+
+spring:
+  # 激活 local profile → 读取 application-local.yml 中的私有配置（如 DeepSeek API Key）
+  # 该文件已被 .gitignore 排除；若不存在也不影响启动
+  profiles:
+    active: local
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/delicious_foods?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    # 支持环境变量覆盖：未设置时回退到本地开发默认值
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:123456}
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+
+jwt:
+  secret: deliciousFoodsSecretKey2024XxYyZz!!
+  expiration: 86400000
+
+file:
+  # 上传目录。结尾带不带 "/" 都可以（代码内部用 File 对象拼接，不依赖结尾斜杠）。
+  # 相对路径以「启动时的工作目录」为基准：在 backend/ 下执行 mvn spring-boot:run 时
+  # 即解析为 backend/uploads/，与仓库中已有的种子图片位置一致。
+  upload-path: ./uploads
+
+# ============================================================
+# AI Agent 配置（OpenAI 兼容协议，无需引入任何第三方 AI 依赖）
+# ------------------------------------------------------------
+# 默认三项均为空 → Agent 自动进入「离线规则模式」：依然能基于站内
+# 菜谱/食材数据回答，功能可用且不会报错。
+#
+# 填入任意一家兼容服务后即自动切换为「在线 Agent 模式」，
+# 开启真正的 Function Calling（工具调用）+ RAG 检索 + 多轮记忆。
+#
+# 常见服务商配置示例（取消注释并填入自己的 Key 即可）：
+#
+#   【DeepSeek】★ 当前已启用，见下方 ai 段
+#     base-url: https://api.deepseek.com
+#     api-key:  sk-你的Key
+#     model:    deepseek-chat
+#     ※ DeepSeek 暂不提供 embeddings 接口，embedding-model 留空即可，
+#       RAG 会自动使用关键词检索（功能完整，无需额外配置）。
+#
+#   【通义千问 DashScope】
+#     base-url: https://dashscope.aliyuncs.com/compatible-mode/v1
+#     api-key:  sk-xxxxxxxx
+#     model:    qwen-plus
+#     embedding-model: text-embedding-v3     # 额外开启语义检索
+#
+#   【OpenAI】
+#     base-url: https://api.openai.com/v1
+#     api-key:  sk-xxxxxxxx
+#     model:    gpt-4o-mini
+#     embedding-model: text-embedding-3-small
+#
+#   【Ollama 本地推理】
+#     base-url: http://localhost:11434/v1
+#     api-key:  ollama
+#     model:    qwen2.5:7b
+# ============================================================
+ai:
+  # Agent 总开关
+  enabled: true
+  # OpenAI 兼容服务地址；留空 = 离线规则模式
+  base-url: https://api.deepseek.com
+  # API Key；优先读环境变量 DEEPSEEK_API_KEY，未设置则为空（自动降级为离线规则模式）
+  # 真实 Key 请放在 application-local.yml（已被 .gitignore 排除）或环境变量中
+  api-key: ${DEEPSEEK_API_KEY:}
+  # 对话模型名；留空 = 离线规则模式
+  #   deepseek-chat     → DeepSeek-V3，通用对话，支持 Function Calling（推荐）
+  #   deepseek-reasoner → DeepSeek-R1，深度推理，回复较慢
+  model: deepseek-chat
+  # 向量化模型名；DeepSeek 暂无 embeddings 接口，留空即用关键词检索
+  embedding-model: ""
+  # 向量化服务地址，默认复用 base-url
+  embedding-base-url: ""
+  # 采样温度（0~1，越低越稳定）
+  temperature: 0.4
+  # 单次生成最大 token
+  max-tokens: 1200
+  # ReAct 工具调用最大轮数
+  max-iterations: 6
+  # 每个会话保留的最近消息条数
+  memory-window: 10
+  # 会话记忆过期时间（分钟）
+  memory-ttl-minutes: 30
+  # 单次大模型请求超时（秒）
+  timeout-seconds: 60
+  # RAG 检索返回条数
+  rag-top-k: 3
