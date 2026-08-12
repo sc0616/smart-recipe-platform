@@ -1,0 +1,132 @@
+<template>
+  <div>
+    <el-card>
+      <div class="toolbar">
+        <el-input v-model="searchName" placeholder="搜索食材名" clearable style="width:220px" @keyup.enter="loadData" />
+        <el-button type="primary" @click="loadData">搜索</el-button>
+        <el-button type="success" @click="openAdd">发布食材</el-button>
+      </div>
+      <el-table :data="tableData" stripe border style="width:100%;margin-top:12px" v-loading="loading">
+        <el-table-column prop="id" label="ID" width="70" />
+        <el-table-column label="图片" width="90">
+          <template #default="{ row }">
+            <el-image v-if="row.fileId" :src="getFileUrl(row.fileId)" style="width:60px;height:60px;border-radius:6px" fit="cover" />
+            <span v-else style="color:#ccc">无图</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="name" label="食材名称" />
+        <el-table-column prop="description" label="描述" show-overflow-tooltip />
+        <el-table-column prop="userName" label="上传人" />
+        <el-table-column label="操作" width="160" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row.id)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+      <el-pagination class="pagination" v-model:current-page="pageNum" v-model:page-size="pageSize"
+        :total="total" layout="total,prev,pager,next,sizes" @change="loadData" />
+    </el-card>
+
+    <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑食材' : '发布食材'" width="480px" @close="resetForm">
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="90px">
+        <el-form-item label="食材名称" prop="name">
+          <el-input v-model="form.name" />
+        </el-form-item>
+        <el-form-item label="描述">
+          <el-input v-model="form.description" type="textarea" :rows="3" />
+        </el-form-item>
+        <el-form-item label="图片">
+          <el-upload action="#" :http-request="handleImgUpload" :show-file-list="false" accept="image/*">
+            <el-image v-if="form.fileId" :src="getFileUrl(form.fileId)" style="width:120px;height:80px;border-radius:6px;cursor:pointer" fit="cover" />
+            <el-button v-else>选择图片</el-button>
+          </el-upload>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="saving" @click="save">保存</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { getFoodsMaterialPage, addFoodsMaterial, updateFoodsMaterial, deleteFoodsMaterial, uploadImage, getFileUrl } from '@/api'
+
+const searchName = ref('null')
+const tableData = ref([])
+const loading = ref(false)
+const pageNum = ref(1)
+const pageSize = ref(10)
+const total = ref(0)
+const saving = ref(false)
+
+const dialogVisible = ref(false)
+const isEdit = ref(false)
+const formRef = ref(null)
+const form = reactive({ id: null, name: '', description: '', fileId: null, fileName: '' })
+const rules = { name: [{ required: true, message: '请输入食材名称', trigger: 'blur' }] }
+
+const loadData = async () => {
+  loading.value = true
+  try {
+    const res = await getFoodsMaterialPage(searchName.value || 'null', pageNum.value, pageSize.value)
+    tableData.value = res.data.records
+    total.value = res.data.total
+  } finally { loading.value = false }
+}
+
+const openAdd = () => {
+  isEdit.value = false
+  dialogVisible.value = true
+}
+
+const openEdit = (row) => {
+  isEdit.value = true
+  Object.assign(form, row)
+  dialogVisible.value = true
+}
+
+const resetForm = () => {
+  Object.assign(form, { id: null, name: '', description: '', fileId: null, fileName: '' })
+  formRef.value?.resetFields()
+}
+
+const handleImgUpload = async ({ file }) => {
+  const fd = new FormData()
+  fd.append('file', file)
+  const res = await uploadImage(fd)
+  form.fileId = Number(res.data.id)
+  form.fileName = res.data.title
+  ElMessage.success('图片上传成功')
+}
+
+const save = async () => {
+  await formRef.value.validate()
+  saving.value = true
+  try {
+    isEdit.value ? await updateFoodsMaterial(form) : await addFoodsMaterial(form)
+    ElMessage.success('保存成功')
+    dialogVisible.value = false
+    loadData()
+  } finally { saving.value = false }
+}
+
+const handleDelete = (id) => {
+  ElMessageBox.confirm('确定删除该食材吗？', '提示', { type: 'warning' }).then(async () => {
+    await deleteFoodsMaterial(id)
+    ElMessage.success('删除成功')
+    loadData()
+  })
+}
+
+onMounted(loadData)
+</script>
+
+<style scoped>
+.toolbar { display: flex; gap: 10px; }
+.pagination { margin-top: 16px; justify-content: flex-end; }
+</style>
