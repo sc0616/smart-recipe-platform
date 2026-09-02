@@ -29,6 +29,8 @@
         <el-menu-item index="/admin/collectInfo">
           <el-icon><Collection /></el-icon><span>收藏记录</span>
         </el-menu-item>
+        <el-menu-item index="/admin/ai">
+          <el-icon><MagicStick /></el-icon><span>AI 智能体</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -86,6 +88,7 @@ const titleMap = {
   '/admin/foodsMenuInfo': '菜谱管理',
   '/admin/praiseInfo': '点赞记录',
   '/admin/collectInfo': '收藏记录',
+  '/admin/ai': 'AI 智能体',
   '/admin/updatePassword': '修改密码'
 }
 const currentTitle = computed(() => titleMap[route.path] || '')
