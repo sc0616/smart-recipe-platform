@@ -63,3 +63,158 @@
 
 ---
 
+## 快速开始
+
+### 环境要求
+
+- JDK 17+
+- MySQL 8.x
+- Node.js 16+
+- Maven
+
+### 1. 初始化数据库
+
+```bash
+mysql -uroot -p < sql/init.sql
+```
+
+### 2. 启动后端（端口 8081）
+
+```bash
+cd backend
+mvn clean spring-boot:run
+```
+
+> 数据库账号默认为 `root / 123456`，可通过环境变量 `DB_USERNAME` / `DB_PASSWORD` 覆盖。
+
+### 3. 启动前端（端口 5174）
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+访问 **http://localhost:5174**
+
+**默认账号**：管理员 `admin / 123456` · 普通用户 `user / 123456`
+
+> 💡 **无需配置 API Key 即可运行** —— 系统会自动进入「离线规则模式」，
+> 基于站内数据检索回答问题，所有功能均可演示。
+
+---
+
+## 启用完整 AI Agent（可选）
+
+默认处于离线模式。配置任一 OpenAI 兼容服务即可升级为完整 Agent，**无需修改代码**：
+
+```yaml
+ai:
+  enabled: true
+  base-url: https://api.deepseek.com    # 或通义千问 / OpenAI / Ollama
+  api-key: ${DEEPSEEK_API_KEY:}         # 推荐用环境变量，避免泄露
+  model: deepseek-chat
+  embedding-model: ""                   # 留空则 RAG 使用关键词检索
+  max-iterations: 6                     # ReAct 最大轮数
+  memory-window: 10                     # 会话记忆窗口
+```
+
+**常见服务商配置**
+
+| 服务商 | base-url | model | embedding-model |
+| --- | --- | --- | --- |
+| DeepSeek | `https://api.deepseek.com` | `deepseek-chat` | 不支持，留空 |
+| 通义千问 | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` | `text-embedding-v3` |
+| OpenAI | `https://api.openai.com/v1` | `gpt-4o-mini` | `text-embedding-3-small` |
+| Ollama 本地 | `http://localhost:11434/v1` | `qwen2.5:7b` | 留空 |
+
+> ⚠️ **请勿将真实 API Key 提交到仓库**。
+> 建议放在 `application-local.yml`（已被 `.gitignore` 排除）或使用环境变量。
+
+---
+
+## 项目架构
+
+```
+┌─────────────────────────────────────────────┐
+│         浏览器（Vue 3 SPA）                  │
+│  用户端 / 管理端 + AI 对话页                  │
+└──────────────────┬──────────────────────────┘
+                   │ HTTP + SSE（Vite 代理 /api）
+┌──────────────────▼──────────────────────────┐
+│      Spring Boot 后端（:8081）               │
+│                                             │
+│  ┌──────────────┐    ┌───────────────────┐  │
+│  │  业务模块     │◄───┤   AI Agent 模块    │  │
+│  │  Controller  │    │  ReActAgent       │  │
+│  │  Service     │复用 │  RecipeTools(×7)  │  │
+│  │  Mapper      │    │  KnowledgeBase    │  │
+│  │  JWT 拦截器   │    │  ChatMemory       │  │
+│  └──────────────┘    └────────┬──────────┘  │
+└───────────────────────────────┼─────────────┘
+                                │ OpenAI 兼容协议
+                    ┌───────────▼───────────┐
+                    │ DeepSeek / 通义 / ... │
+                    └───────────────────────┘
+```
+
+**设计要点**：Agent 模块**单向依赖**既有 Service 层，把原有业务能力「工具化」，对业务代码**零侵入**。
+
+---
+
+## AI Agent 实现要点
+
+### ReAct 循环
+
+```
+Thought（思考）→ Action（调用工具）→ Observation（观察结果）→ 再 Thought → Final Answer
+```
+
+实际执行示例：
+
+```
+用户：我有土豆和牛肉，能做什么菜？
+
+第 1 轮  Action      : recommend_recipes({"ingredients":["土豆","牛肉"]})   ← 模型自主决定
+         Observation : {"total":2,"items":[{"name":"土豆炖牛肉","matchCount":2}]}
+
+第 2 轮  Final Answer: 推荐你做土豆炖牛肉，这道菜……
+```
+
+关键在于**调哪个工具、传什么参数由模型自主决定**，而非代码写死的 if-else。
+
+### 7 个 Agent 工具
+
+| 工具 | 用途 | 参数 |
+| --- | --- | --- |
+| `search_recipes` | 搜索菜谱 | `keyword?` `classifyId?` `pageNum?` `pageSize?` |
+| `get_recipe_detail` | 获取完整做法 | `recipeId` |
+| `list_classifications` | 列出分类 | — |
+| `search_materials` | 搜索食材 | `keyword?` |
+| `recommend_recipes` | 按食材推荐 | `ingredients` |
+| `get_site_stats` | 站内统计 | — |
+| `search_knowledge` | 知识库检索 | `question` |
+
+### RAG 双路检索
+
+| 模式 | 触发条件 | 实现 |
+| --- | --- | --- |
+| 语义检索 | 配置了向量模型 | Embedding + 余弦相似度 |
+| 关键词检索 | 未配置向量模型 | 汉字二元组 + 英文词匹配 |
+
+**为什么双路**：DeepSeek 等不提供 Embedding 接口，若强依赖向量检索则默认配置下不可用。
+关键词检索作为零依赖兜底；语义检索失败时也会**自动回退**。
+
+### 优雅降级
+
+| 场景 | 降级行为 |
+| --- | --- |
+| 未配置 API Key | 离线规则模式，基于站内检索回答 |
+| 未配置向量模型 | RAG 使用关键词检索 |
+| 向量服务异常 | 回退关键词检索 |
+| 工具执行失败 | 返回结构化 error，交模型处理 |
+
+项目 clone 后**零配置即可演示**，配置后自动升级，全程无需改代码。
+
+---
+
