@@ -218,3 +218,78 @@ Thought（思考）→ Action（调用工具）→ Observation（观察结果）
 
 ---
 
+## 接口一览
+
+### AI Agent 接口
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| POST | `/agent/chat` | SSE 流式对话 |
+| POST | `/agent/chat/message` | 非流式对话 |
+| POST | `/agent/session/clear` | 清空会话记忆 |
+| GET | `/agent/health` | Agent 状态探测 |
+| POST | `/agent/knowledge/reindex` | 重建 RAG 知识库 |
+
+**SSE 事件协议**
+
+| 事件 | 含义 |
+| --- | --- |
+| `status` | 思考状态 |
+| `tool` | 工具调用开始 / 结束 |
+| `token` | 回答文本片段 |
+| `error` | 错误信息 |
+| `done` | 本次回答结束 |
+
+---
+
+## 项目结构
+
+```
+smart-recipe-platform/
+├── backend/                        Spring Boot 后端
+│   └── src/main/java/com/example/delicious/
+│       ├── common/                 通用模块（Result / JWT / 异常处理）
+│       ├── controller/             业务接口
+│       ├── service/                业务逻辑
+│       ├── mapper/                 数据访问
+│       ├── entity/                 实体类
+│       └── agent/                  ★ AI Agent 模块
+│           ├── core/ReActAgent           ReAct 核心循环
+│           ├── tools/RecipeTools         7 个工具
+│           ├── knowledge/                 RAG 检索
+│           ├── memory/                    会话记忆
+│           ├── llm/                       LLM 网关
+│           └── controller/                SSE 接口
+├── frontend/                       Vue 3 前端
+│   └── src/
+│       ├── api/agent.js            Agent 接口 + SSE 流解析
+│       ├── utils/markdown.js       安全 Markdown 渲染
+│       └── views/assistant/        AI 对话页
+├── sql/init.sql                    建库建表 + 种子数据
+└── AI-AGENT.md                     AI Agent 改造说明
+```
+
+---
+
+## 技术难点
+
+1. **SSE 分帧被换行符破坏** —— 模型输出含换行符时会破坏 SSE 的「空行分帧」结构导致丢字，
+   通过下发前统一 JSON 编码解决。
+2. **无 Embedding 接口时 RAG 不可用** —— 实现关键词检索作为零依赖兜底。
+3. **上传路径三处不一致** —— 统一配置源，路径拼接改用 `File` 对象消除「结尾斜杠」陷阱。
+4. **上下文膨胀** —— 消息窗口 + TTL 淘汰双重限制。
+
+> 详细的问题排查过程见 [AI-AGENT.md](AI-AGENT.md) 附录 A。
+
+---
+
+## 文档
+
+- [AI-AGENT.md](AI-AGENT.md) —— AI Agent 化改造说明、配置项、接口自测指南、问题排查 FAQ
+- [sql/init.sql](sql/init.sql) —— 数据库初始化脚本
+
+---
+
+## License
+
+本项目仅供学习交流使用。
