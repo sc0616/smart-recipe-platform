@@ -436,3 +436,528 @@ SSE 规范用**空行**作为消息分隔符。模型输出的 Markdown 里必�
 
 ---
 
+## 5. 快速开始
+
+### 5.0 前置准备（两种方式都需要）
+
+| 依赖 | 版本要求 | 校验命令 |
+|---|---|---|
+| JDK | 17+（Spring Boot 3.2.5 要求） | `java -version` |
+| Maven | 3.6+ | `mvn -v` |
+| Node.js | 18+（Vue 3 + Vite） | `node -v` |
+| MySQL | 8.x，端口 3306 | `mysql --version` |
+
+**第 1 步：建库**
+
+```powershell
+# 在项目根目录执行（PowerShell）
+mysql -u root -p123456 -e "CREATE DATABASE IF NOT EXISTS delicious_foods DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;"
+mysql -u root -p123456 delicious_foods < sql\init.sql
+```
+
+如果 `mysql` 不在 PATH 中，也可用全路径，例如：
+
+```powershell
+& "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe" -u root -p123456 delicious_foods < sql\init.sql
+```
+
+验证建库结果（应输出 **8** 张表）：
+
+```powershell
+mysql -u root -p123456 delicious_foods -e "SHOW TABLES;"
+```
+
+预期表名：`admin_info`、`user_info`、`foods_menu_info`、`foods_material_info`、`classify_info`、`nx_system_file_info`、`praise_info`、`collect_info`。
+
+> 若数据库账号密码不是 `root/123456`，用环境变量覆盖，无需改代码：
+> ```powershell
+> $env:DB_USERNAME="你的账号"
+> $env:DB_PASSWORD="你的密码"
+> ```
+
+**默认账号**：
+
+| 角色 | 账号 | 密码 | `level` | 登录后可见的 AI 入口 |
+|---|---|---|---|---|
+| 管理员 | `admin` | `123456` | 1 | `/admin/ai` |
+| 普通用户 | `user` | `123456` | 2 | `/user/ai` |
+
+---
+
+### 5.1 方式一：离线规则模式（零配置，推荐先跑通）
+
+**不需要任何 API Key**。`ai.base-url` / `ai.api-key` / `ai.model` 中 `api-key` 默认取 `${DEEPSEEK_API_KEY:}`，环境变量未设置时为空 → 自动进入离线规则模式，功能可用且不报错。
+
+**启动后端（端口 8081）**
+
+```powershell
+cd backend
+mvn spring-boot:run
+```
+
+看到类似日志即为成功：
+
+```
+Tomcat started on port 8081 (http) with context path ''
+菜谱知识库已重建，共 N 条知识切片（检索模式：关键词）
+```
+
+> **注意端口是 8081**（不是 Spring Boot 默认的 8080），已在 `application.yml` 中显式配置，以避免与本机其他项目冲突。若改回 8080，必须同步修改 `frontend/vite.config.js` 中 proxy 的 `target`。
+
+**启动前端（端口 5174）**
+
+另开一个终端：
+
+```powershell
+cd frontend
+npm install        # 首次运行需要
+npm run dev
+```
+
+输出：
+
+```
+  ➜  Local:   http://localhost:5174/
+```
+
+> **注意端口是 5174**（不是 Vite 默认的 5173），已在 `vite.config.js` 中配置 `port: 5174`。
+
+**访问**：浏览器打开 `http://localhost:5174/` → 用 `admin/123456` 登录 → 进入 **AI 助手**（`/admin/ai`）。
+
+**离线模式下的预期表现**：
+
+- 页面顶部状态徽标显示「离线规则模式」，工具数显示 7，知识库切片数显示实际条数
+- 提问「站内一共有多少道菜谱？」→ 返回真实的统计数字
+- 提问「有哪些菜谱分类？」→ 列出分类
+- 提问「红烧肉怎么做？」→ 列出匹配的菜谱名（离线模式不生成做法，只做站内检索）
+
+---
+
+### 5.2 方式二：在线 Agent 模式（配置 API Key）
+
+**目标**：开启真正的 Function Calling + ReAct 多轮推理 + （可选）语义检索。
+
+#### 推荐做法：写入 `application-local.yml`
+
+`application.yml` 中 `spring.profiles.active: local`，且 `application-local.yml` 已被 `.gitignore` 排除，因此**私有 Key 不会进仓库**。在 `backend/src/main/resources/` 下新建 `application-local.yml`：
+
+```yaml
+ai:
+  base-url: https://api.deepseek.com
+  api-key: sk-你的真实Key
+  model: deepseek-chat
+  embedding-model: ""      # DeepSeek 无 embeddings 接口，留空 → 关键词检索
+```
+
+#### 备选做法：环境变量
+
+```powershell
+# PowerShell（当前会话生效）
+$env:DEEPSEEK_API_KEY = "sk-你的真实Key"
+cd backend
+mvn spring-boot:run
+```
+
+```cmd
+:: CMD
+set DEEPSEEK_API_KEY=sk-你的真实Key
+cd backend
+mvn spring-boot:run
+```
+
+#### 服务商配置示例
+
+| 服务商 | `base-url` | `model` | `embedding-model` | 备注 |
+|---|---|---|---|---|
+| **DeepSeek** | `https://api.deepseek.com` | `deepseek-chat` | 留空 `""` | 暂无 embeddings 接口 → 自动关键词检索。也支持 `deepseek-reasoner`（R1，回复较慢） |
+| **通义千问 DashScope** | `https://dashscope.aliyuncs.com/compatible-mode/v1` | `qwen-plus` | `text-embedding-v3` | 可完整开启「语义 + 关键词」双通道检索 |
+| **OpenAI** | `https://api.openai.com/v1` | `gpt-4o-mini` | `text-embedding-3-small` | 同样支持双通道检索 |
+| **Ollama（本地）** | `http://localhost:11434/v1` | `qwen2.5:7b` | 依模型而定，可留空 | `api-key` 填 `ollama`（占位即可，Ollama 不校验） |
+
+> **路径拼接规则**：代码会把 `base-url` 去掉结尾 `/` 后拼 `/chat/completions` 与 `/embeddings`。例如 `https://api.deepseek.com` → `https://api.deepseek.com/chat/completions`；`https://api.openai.com/v1` → `https://api.openai.com/v1/chat/completions`。**`/v1` 这类版本前缀必须包含在 `base-url` 里**。
+
+#### 配置生效验证
+
+```powershell
+# 重启后端后，health 中应看到 online: true、mode: online
+curl.exe -s http://localhost:8081/agent/health -H "Authorization: Bearer <你的Token>"
+```
+
+---
+
+### 5.3 全部配置项
+
+配置位于 `backend/src/main/resources/application.yml` 的 `ai.*` 段。
+
+```yaml
+ai:
+  enabled: true                            # Agent 总开关
+  base-url: https://api.deepseek.com       # OpenAI 兼容服务地址，留空=离线模式
+  api-key: ${DEEPSEEK_API_KEY:}            # API Key，留空=离线模式
+  model: deepseek-chat                     # 对话模型
+  embedding-model: ""                      # 向量模型，留空则用关键词检索
+  embedding-base-url: ""                   # 向量服务地址，默认复用 base-url
+  temperature: 0.4                         # 采样温度
+  max-tokens: 1200                         # 单次最大 token
+  max-iterations: 6                        # ReAct 最大轮数
+  memory-window: 10                        # 会话记忆窗口条数
+  memory-ttl-minutes: 30                   # 会话过期时间
+  timeout-seconds: 60                      # 请求超时
+  rag-top-k: 3                             # RAG 返回条数
+```
+
+| 配置项 | 类型 | 默认值 | 作用 | 调优建议 |
+|---|---|---|---|---|
+| `ai.enabled` | boolean | `true` | Agent 总开关；`false` 时 `online()` 恒为 false | 想临时下线 AI 能力而不删配置时设为 `false` |
+| `ai.base-url` | String | `https://api.deepseek.com` | OpenAI 兼容服务地址（**不含** `/chat/completions`） | 留空即离线模式；换服务商只改这里 |
+| `ai.api-key` | String | `${DEEPSEEK_API_KEY:}` | API Key；支持环境变量注入 | 建议放 `application-local.yml` 或环境变量，不要提交 |
+| `ai.model` | String | `deepseek-chat` | 对话模型名 | 留空即离线模式 |
+| `ai.embedding-model` | String | `""` | 向量模型名；**留空则 RAG 用关键词检索** | DeepSeek 用户保持留空；通义/OpenAI 可填 |
+| `ai.embedding-base-url` | String | `""` | 向量服务地址；留空复用 `base-url` | 对话与向量分开采购时使用 |
+| `ai.temperature` | double | `0.4` | 采样温度 | 菜谱回答要求稳定，0.3~0.5 较合适 |
+| `ai.max-tokens` | int | `1200` | 单次生成上限 | 回答被截断时调大 |
+| `ai.max-iterations` | int | `6` | ReAct 最大轮数，防死循环 | 调大 = 可串联更多工具，但更慢更贵 |
+| `ai.memory-window` | int | `10` | 每会话保留消息条数 | 10 条 ≈ 5 轮问答；调大增加上下文成本 |
+| `ai.memory-ttl-minutes` | long | `30` | 记忆过期时间（分钟） | 演示场景可调小以便观察淘汰 |
+| `ai.timeout-seconds` | int | `60` | 单次 LLM 请求超时 | 用 `deepseek-reasoner` 时建议调到 120 |
+| `ai.rag-top-k` | int | `3` | RAG 返回条数 | 知识库大时调大，但会占用 prompt 长度 |
+
+> **配置绑定类**：`agent/config/AgentProperties.java`，`@ConfigurationProperties(prefix = "ai")` + Lombok `@Data`，通过 `@EnableConfigurationProperties(AgentProperties.class)` 在 `AgentConfig` 中显式启用。
+
+---
+
+## 6. 接口清单
+
+所有接口前缀 `/agent`，**均需有效 JWT**。响应统一包装在项目既有的 `Result<T>` 结构中：`{"code": "...", "msg": "...", "data": {...}}`。
+
+| # | 方法 | 路径 | 用途 | 请求体 | 响应 |
+|---|---|---|---|---|---|
+| 1 | `POST` | `/agent/chat` | **SSE 流式对话**（打字机 + 工具事件） | `{sessionId, message}` | `text/event-stream` |
+| 2 | `POST` | `/agent/chat/message` | **非流式对话**（脚本/接口测试友好） | `{sessionId, message}` | `Result<{sessionId, answer, mode}>` |
+| 3 | `POST` | `/agent/session/clear` | **清空会话记忆** | `{sessionId}`（可空） | `Result<?>` |
+| 4 | `GET` | `/agent/health` | **健康检查 / 能力探测** | 无 | `Result<{...12 个字段}>` |
+| 5 | `POST` | `/agent/knowledge/reindex` | **重建 RAG 知识库** | 无 | `Result<{knowledgeChunks, retrievalMode}>` |
+
+请求体结构与 `agent/model/AgentChatRequest.java` 一致：
+
+```json
+{
+  "sessionId": "3f2a...-uuid",   // 可空；为空时后端自动生成 UUID。多轮记忆的键
+  "message": "红烧肉怎么做？"     // 用户消息
+}
+```
+
+### 6.1 SSE 事件协议
+
+`POST /agent/chat` 返回 `Content-Type: text/event-stream`，事件共 **5 类**，**载荷一律为 JSON 字符串**。
+
+| 事件名 | 载荷 | 触发时机 | 前端处理 |
+|---|---|---|---|
+| `status` | JSON 字符串，如 `"\"正在思考…\""` | 每轮开始前、离线模式提示 | 更新气泡上的状态文案 |
+| `tool` | JSON 对象字符串：`{"name":"工具名","status":"start"\|"end"}` | 工具调用前后各一次 | 显示工具标签，`start` 时插入，`end` 时标记完成 |
+| `token` | JSON 字符串，回答文本的一个分片（约 6 字符） | 模型给出最终答案时逐片下发 | 追加到气泡内容 |
+| `error` | JSON 字符串，错误信息 | 无有效 choices / 执行异常 | 以 ⚠️ 前缀追加到内容中 |
+| `done` | `{}` | 流程结束（`finally` 中必发） | 结束 loading 状态 |
+
+**原始 SSE 报文示例**：
+
+```
+event:status
+data:"离线规则模式：未配置大模型，使用站内检索作答"
+
+event:tool
+data:{"name":"search_recipes","status":"start"}
+
+event:tool
+data:{"name":"search_recipes","status":"end"}
+
+event:token
+data:"🧠 当前是「离线规则模式」"
+
+event:token
+data:"——还没有配置大模型"
+
+event:done
+data:{}
+```
+
+**出错时的报文示例**（`error` 事件，随后仍会补发 `done`）：
+
+```
+event:status
+data:"正在思考…"
+
+event:error
+data:"大模型返回 401：{\"error\":{\"message\":\"Authentication Fails\"}}"
+
+event:done
+data:{}
+```
+
+> **注意**：`data:` 后面是**带引号的 JSON 字符串**（因为整体做了 JSON 编码），前端必须 `JSON.parse()` 一次才能拿到真实文本。这正是解决换行破坏分帧的关键设计，详见 [3.5 节](#35-sse-流式输出)。
+>
+> **`done` 一定会发**：它在 `ReActAgent.execute()` 的 `finally` 块中调用，因此无论走 `status`/`token`/`error` 哪条路径，前端都能收到结束标记并复位 loading 状态，不会卡死。
+
+### 6.2 `/agent/health` 响应示例
+
+```json
+{
+  "code": "200",
+  "msg": "成功",
+  "data": {
+    "enabled": true,
+    "online": true,
+    "mode": "online",
+    "model": "deepseek-chat",
+    "baseUrl": "https://api.deepseek.com",
+    "temperature": 0.4,
+    "maxIterations": 6,
+    "embeddingEnabled": false,
+    "embeddingModel": "",
+    "retrievalMode": "keyword",
+    "knowledgeChunks": 42,
+    "activeSessions": 1,
+    "tools": [
+      "search_recipes",
+      "get_recipe_detail",
+      "list_classifications",
+      "search_materials",
+      "recommend_recipes",
+      "get_site_stats",
+      "search_knowledge"
+    ]
+  }
+}
+```
+
+**字段说明**：
+
+| 字段 | 含义 | 排障价值 |
+|---|---|---|
+| `enabled` | `ai.enabled` 的值 | 为 false 说明总开关被关了 |
+| `online` | 是否具备调用真实大模型的条件 | **为 false 时先查 `base-url`/`api-key`/`model` 三项是否齐全** |
+| `mode` | `"online"` / `"offline"` | 前端据此显示状态徽标 |
+| `model` | 当前对话模型 | 核对是否加载了预期的 profile |
+| `baseUrl` | 当前服务地址 | 核对路径前缀（如 `/v1` 是否漏了） |
+| `temperature` | 采样温度 | 确认配置绑定生效 |
+| `maxIterations` | ReAct 最大轮数 | 确认配置绑定生效 |
+| `embeddingEnabled` | 是否启用语义检索 | false 说明未配 `embedding-model` |
+| `embeddingModel` | 向量模型名 | — |
+| `retrievalMode` | `"semantic+keyword"` / `"keyword"` | 说明当前 RAG 走哪条通道 |
+| `knowledgeChunks` | 知识库切片总数 | **为 0 说明知识库是空的**，需调 reindex 或检查库内数据 |
+| `activeSessions` | 当前内存中的活跃会话数 | 验证记忆窗口/TTL 是否生效 |
+| `tools` | 已注册的 7 个工具名 | 数量不足说明 Bean 装配有问题 |
+
+### 6.3 `/agent/chat/message` 响应示例
+
+```json
+{
+  "code": "200",
+  "msg": "成功",
+  "data": {
+    "sessionId": "9b1deb4d-3b7d-4bad-9bdd-2b0d7b3dcb6d",
+    "answer": "本站目前有 12 道菜谱、18 种食材、5 个分类……",
+    "mode": "offline"
+  }
+}
+```
+
+| 字段 | 含义 |
+|---|---|
+| `sessionId` | 本次会话 ID。请求未传时由后端生成，**客户端应保存以延续多轮记忆** |
+| `answer` | 完整回答文本（等同把所有 `token` 事件拼起来） |
+| `mode` | `"online"` / `"offline"` |
+
+---
+
+## 7. 工具清单
+
+7 个工具全部在 `tools/RecipeTools.java` 中注册（`toolDefs()`）与分发（`dispatch()`），**统一复用既有 Service 层**，不重复写 SQL。
+
+| # | 工具名 | 用途 | 参数 | 必填 | 复用的能力 |
+|---|---|---|---|---|---|
+| 1 | `search_recipes` | 按关键词或分类搜索站内菜谱 | `keyword`(string)、`classifyId`(integer)、`pageNum`(integer,默认1)、`pageSize`(integer,默认5) | 无 | `FoodsMenuInfoService.findPage` |
+| 2 | `get_recipe_detail` | 根据菜谱 ID 获取完整信息（含做法步骤与小贴士） | `recipeId`(integer) | ✅ `recipeId` | `FoodsMenuInfoService.findById` |
+| 3 | `list_classifications` | 列出站内所有菜谱分类及其描述 | 无 | — | `ClassifyInfoService.findAll` |
+| 4 | `search_materials` | 按关键词搜索站内食材库 | `keyword`(string) | 无 | `FoodsMaterialInfoService.findAll` + 内存过滤 |
+| 5 | `recommend_recipes` | 根据用户手头食材推荐可做菜谱 | `ingredients`(array&lt;string&gt;) | ✅ `ingredients` | `FoodsMenuInfoService.findAll` + 匹配打分 |
+| 6 | `get_site_stats` | 获取站内统计：菜谱数、食材数、分类数、管理员数、注册用户数 | 无 | — | 5 个 Service 的 `findAll().size()` |
+| 7 | `search_knowledge` | 从知识库检索资料，回答烹饪常识/食材搭配 | `question`(string) | ✅ `question` | `RecipeKnowledgeBase.retrieve` |
+
+### 7.1 工具返回结构
+
+| 工具 | 返回 JSON 结构 |
+|---|---|
+| `search_recipes` | `{"total": 12, "items": [{"id","name","tips","classifyId","userName","description"(截断120字)}]}` |
+| `get_recipe_detail` | `{"id","name","tips","classifyId","userName","description"(完整),"fileId"}` |
+| `list_classifications` | `[{"id","name","description"}]` |
+| `search_materials` | `{"total": 3, "items": [{"id","name","description","fileId"}]}` |
+| `recommend_recipes` | `{"ingredients": [...], "total": 4, "items": [{"id","name","tips","matchedIngredients":[...],"matchCount","description"}]}`，按 `matchCount` 降序取前 5 |
+| `get_site_stats` | `{"recipeCount","materialCount","classifyCount","adminCount","userCount"}` |
+| `search_knowledge` | `["切片1","切片2","切片3"]` |
+| **任意工具出错** | `{"error": "工具执行失败：..."}` 或 `{"error": "缺少 recipeId 参数"}` |
+
+### 7.2 工具的 JSON Schema 构造
+
+以 `recommend_recipes` 为例，`toolDefs()` 中实际生成的结构为：
+
+```json
+{
+  "type": "function",
+  "function": {
+    "name": "recommend_recipes",
+    "description": "根据用户手头已有的食材推荐可做的菜谱。当用户说「我有XX和YY，能做什么菜」时调用。",
+    "parameters": {
+      "type": "object",
+      "properties": {
+        "ingredients": {
+          "type": "array",
+          "description": "用户拥有的食材名称列表，例如 [\"土豆\",\"牛肉\"]",
+          "items": { "type": "string", "description": "食材名称" }
+        }
+      },
+      "required": ["ingredients"]
+    }
+  }
+}
+```
+
+由 `objectSchema()` / `props()` / `stringSchema()` / `integerSchema()` / `stringArraySchema()` 五个私有辅助方法拼装，最终由 `OpenAiCompatibleClient.chat()` 包进 `tools[]` 数组，并设置 `tool_choice: "auto"`。
+
+### 7.3 离线模式的自然语言摘要方法
+
+`RecipeTools` 另提供 4 个 `human*()` 方法，专门供**离线规则模式**把结构化结果转成人类可读文本（在线模式下不使用）：
+
+| 方法 | 输出形态 |
+|---|---|
+| `humanSearchRecipes(keyword, limit)` | `• 红烧肉（肥而不腻）` 逐行 |
+| `humanSearchMaterials(keyword, limit)` | `• 土豆：富含淀粉…` 逐行（描述截断 40 字） |
+| `humanListClassifications()` | `• 家常菜：适合日常…` 逐行 |
+| `humanSiteStats()` | `菜谱 12 道、食材 18 种、分类 5 个、注册用户 3 人、管理员 1 人` |
+
+---
+
+## 8. 前端使用
+
+### 8.1 页面与路由
+
+| 路由 | 组件 | 入口 |
+|---|---|---|
+| `/admin/ai` | `views/assistant/AiChat.vue` | 管理端登录 `admin/123456` |
+| `/user/ai` | `views/assistant/AiChat.vue` | 用户端登录 `user/123456` |
+
+**同一个组件服务两个端**，区别仅在路由前缀与侧边栏菜单位置。
+
+### 8.2 `AiChat.vue` 功能一览
+
+| 功能区 | 说明 |
+|---|---|
+| 顶部状态条 | 显示在线/离线徽标、已注册工具数、知识库切片数（数据来自 `/agent/health`） |
+| 重建知识库按钮 | 调 `reindexAgentKnowledge()`，成功后 `ElMessage.success("知识库已重建，共 N 条切片")` 并刷新 health |
+| 新建会话按钮 | 中断当前流 → 清空后端记忆 → 换新 `sessionId` → 清空消息列表 |
+| 工具能力展示 | 列出 7 个工具，用中文标签展示 |
+| 消息列表 | 用户气泡 + 助手气泡；助手气泡用 `v-html="renderMarkdown(m.content)"` 渲染 |
+| 工具调用可视化 | 助手气泡内的 `.tools` 区域，用 `el-tag` 展示本次调用过的工具（`start` 插入，`end` 标记 `done`） |
+| 状态提示 | 气泡内显示 `status` 事件文案（如「正在思考…」） |
+| 输入区 | 输入框 + 发送按钮；`sending` 期间禁用防止重复提交 |
+| 快捷提问 | 4 个建议问题：站内一共有多少道菜谱？/ 有哪些菜谱分类？/ 红烧肉怎么做？/ 我有土豆和牛肉，能做什么菜？ |
+| 自动滚动 | `scrollToBottom()` 用 `nextTick()` 后设置 `scrollTop` |
+| 会话 ID | `crypto.randomUUID()` 生成，无该 API 时降级为 `'sess-' + Date.now() + '-' + 随机串` |
+
+**工具中文标签映射**（`TOOL_LABELS`）：
+
+| 工具名 | 显示标签 |
+|---|---|
+| `search_recipes` | 搜索菜谱 |
+| `get_recipe_detail` | 查看菜谱详情 |
+| `list_classifications` | 查询分类 |
+| `search_materials` | 搜索食材 |
+| `recommend_recipes` | 按食材推荐 |
+| `get_site_stats` | 统计站内数据 |
+| `search_knowledge` | 检索知识库 |
+
+### 8.3 SSE 消费方式：为什么用 fetch 而不是 EventSource
+
+`api/agent.js` 的 `streamAgentChat()` 使用 `fetch` + `ReadableStream`，**核心原因**：
+
+> `EventSource` 只支持 **GET** 请求，而对话需要 **POST** 传消息体，并且需要携带 `Authorization` 头。
+
+实现要点：
+
+```js
+const controller = new AbortController()
+
+const res = await fetch('/api/agent/chat', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    Authorization: 'Bearer ' + (localStorage.getItem('token') || '')  // 手动带 JWT
+  },
+  body: JSON.stringify({ sessionId, message }),
+  signal: controller.signal
+})
+
+if (res.status === 401) { handlers.onError?.('登录已过期，请重新登录'); return }
+
+const reader = res.body.getReader()
+const decoder = new TextDecoder('utf-8')
+let buffer = ''
+
+for (;;) {
+  const { done, value } = await reader.read()
+  if (done) break
+  buffer += decoder.decode(value, { stream: true })
+
+  let sep
+  while ((sep = buffer.indexOf('\n\n')) !== -1) {   // SSE 以空行分帧
+    const block = buffer.slice(0, sep)
+    buffer = buffer.slice(sep + 2)
+    handleBlock(block, handlers)
+  }
+}
+```
+
+| 工程细节 | 处理方式 |
+|---|---|
+| 分帧 | 以 `\n\n` 切分；`buffer` 保留不完整尾巴，跨 chunk 拼接 |
+| 流结束残留 | `if (buffer.trim()) handleBlock(buffer, handlers)` 兜底处理 |
+| 解码 | `TextDecoder('utf-8')` + `{ stream: true }`，避免多字节中文被截断成乱码 |
+| 中断 | 返回 `() => controller.abort()`，调用方保存为 `abortFn`，新建会话/卸载时调用 |
+| 中断异常 | `catch` 中判断 `e.name === 'AbortError'` 直接 return，不报错 |
+| 载荷解码 | `decodePayload(raw)` 中 `JSON.parse()`；解析失败则原样返回（容错） |
+| 401 处理 | 单独分支给出「登录已过期」提示 |
+| 事件映射 | `token`→`onToken`、`status`→`onStatus`、`tool`→`onTool`、`error`→`onError`、`done`→`onDone` |
+
+### 8.4 Markdown 渲染：`utils/markdown.js`
+
+**零依赖的极简渲染器**，安全性来自**处理顺序**：
+
+```
+原文 → escapeHtml()（转义 & < > " '）→ 再解析 Markdown 语法 → 输出 HTML
+```
+
+因为 HTML 标签在解析前就已被转义，模型输出中的 `<script>` 等不会被浏览器执行。链接额外限制为**仅允许 `http/https`** 协议：
+
+```js
+s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+          '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>')
+```
+
+**支持的语法**：
+
+| 语法 | 输出 |
+|---|---|
+| ` ``` ` 围栏代码块 | `<pre class="md-pre"><code>…</code></pre>` |
+| `` `code` `` | `<code class="md-code">` |
+| `# ` ~ `#### ` | 标题**降级**为 `h3`~`h6`（`level = 井号数 + 2`，避免与页面标题抢层级） |
+| `- ` / `* ` / `+ ` | 无序列表 `<ul><li>` |
+| `1. ` / `1) ` | 有序列表 `<ol><li>` |
+| `**粗体**` | `<strong>` |
+| `*斜体*` | `<em>` |
+| `[文字](https://…)` | 安全外链 |
+| 连续文本行 | `<p>` + `<br>` |
+
+渲染结合了 `<div class="md" v-html="renderMarkdown(m.content)">` 与组件内 `:deep()` 样式（如 `.md :deep(.md-pre)`）。
+
+---
+
