@@ -961,3 +961,589 @@ s.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
 
 ---
 
+## 9. 验证方式
+
+### 9.0 前置：登录获取 Token
+
+`/login` 在 JWT 白名单内，无需鉴权。请求体需要 `name` / `password` / `level`（**`level` 必填**：1=管理员，2=普通用户），响应中 `data.token` 即 JWT。
+
+**PowerShell（curl.exe 是 Windows 10+ 内置）**：
+
+```powershell
+# 管理员登录，把 token 存进变量
+$login = curl.exe -s -X POST http://localhost:8081/login `
+  -H "Content-Type: application/json" `
+  -d '{\"name\":\"admin\",\"password\":\"123456\",\"level\":1}'
+
+$login
+$token = ($login | ConvertFrom-Json).data.token
+$token
+```
+
+> **Windows PowerShell 转义提示**：`curl.exe` 是原生程序，JSON 中的双引号在 PowerShell 里必须写成 `\"`。若嫌麻烦，可用 `Invoke-RestMethod`：
+> ```powershell
+> $body = @{ name = 'admin'; password = '123456'; level = 1 } | ConvertTo-Json
+> $login = Invoke-RestMethod -Uri 'http://localhost:8081/login' -Method Post `
+>           -ContentType 'application/json' -Body $body
+> $token = $login.data.token
+> ```
+
+**CMD（注意 JSON 引号写法）**：
+
+```cmd
+curl -s -X POST http://localhost:8081/login -H "Content-Type: application/json" -d "{\"name\":\"admin\",\"password\":\"123456\",\"level\":1}"
+```
+
+**Git Bash / WSL / Linux**：
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8081/login \
+  -H "Content-Type: application/json" \
+  -d '{"name":"admin","password":"123456","level":1}' \
+  | python -c "import sys,json;print(json.load(sys.stdin)['data']['token'])")
+echo "$TOKEN"
+```
+
+预期响应：
+
+```json
+{
+  "code": "200",
+  "msg": "成功",
+  "data": {
+    "id": 1, "name": "admin", "nickName": "系统管理员", "level": 1,
+    "token": "eyJhbGciOiJIUzI1NiJ9...."
+  }
+}
+```
+
+---
+
+### 9.1 探活：`GET /agent/health`
+
+```powershell
+curl.exe -s http://localhost:8081/agent/health -H "Authorization: Bearer $token"
+```
+
+**判定标准**：
+
+| 观察点 | 期望 | 不符时的排查方向 |
+|---|---|---|
+| HTTP 可达 | 返回 JSON | 后端是否在 8081 运行 |
+| 鉴权 | 不带 Token 应返回 401 | `WebConfig` 白名单是否正确 |
+| `online` | 配了 Key 为 `true`，否则 `false` | 检查 `base-url`/`api-key`/`model` 三项 |
+| `tools` 数组 | **恰好 7 个** | Bean 装配问题 |
+| `knowledgeChunks` | **> 0** | 为 0 说明库里没数据，或需 reindex |
+| `retrievalMode` | 无向量模型时为 `"keyword"` | 符合预期即正常 |
+
+---
+
+### 9.2 非流式对话
+
+```powershell
+$body = '{\"sessionId\":\"test-001\",\"message\":\"站内一共有多少道菜谱？\"}'
+
+curl.exe -s -X POST http://localhost:8081/agent/chat/message `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $token" `
+  -d $body
+```
+
+预期（离线模式）：
+
+```json
+{
+  "code": "200",
+  "msg": "成功",
+  "data": {
+    "sessionId": "test-001",
+    "answer": "🧠 当前是「离线规则模式」……📊 本站数据：菜谱 12 道、食材 18 种、分类 5 个……",
+    "mode": "offline"
+  }
+}
+```
+
+预期（在线模式）：`mode` 为 `"online"`，`answer` 是模型组织过的自然语言回答。
+
+**验证多轮记忆**（同一 `sessionId` 连续两问，第二问用代词指代第一问）：
+
+```powershell
+curl.exe -s -X POST http://localhost:8081/agent/chat/message -H "Content-Type: application/json" -H "Authorization: Bearer $token" -d '{\"sessionId\":\"mem-001\",\"message\":\"红烧肉怎么做？\"}'
+curl.exe -s -X POST http://localhost:8081/agent/chat/message -H "Content-Type: application/json" -H "Authorization: Bearer $token" -d '{\"sessionId\":\"mem-001\",\"message\":\"它的食材有哪些？\"}'
+```
+
+在线模式下第二问能理解「它」指红烧肉，即说明 `ChatMemoryStore` 生效。
+
+---
+
+### 9.3 流式对话：观察 SSE 事件
+
+`curl.exe` 默认会缓冲输出，**强烈建议加 `-N`**（`--no-buffer`）才能实时看到逐帧推送：
+
+```powershell
+curl.exe -N -X POST http://localhost:8081/agent/chat `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $token" `
+  -d '{\"sessionId\":\"sse-001\",\"message\":\"红烧肉怎么做？\"}'
+```
+
+> **提示**：`-H "Accept: text/event-stream"` 可不加，因为该接口已在 `@PostMapping(produces = MediaType.TEXT_EVENT_STREAM_VALUE)` 中声明。
+
+**预期输出（在线模式，逐帧实时到达）**：
+
+```
+event:status
+data:"正在思考…"
+
+event:tool
+data:{"name":"search_recipes","status":"start"}
+
+event:tool
+data:{"name":"search_recipes","status":"end"}
+
+event:status
+data:"正在根据工具结果继续推理…"
+
+event:tool
+data:{"name":"get_recipe_detail","status":"start"}
+
+event:tool
+data:{"name":"get_recipe_detail","status":"end"}
+
+event:token
+data:"## 红烧肉"
+
+event:token
+data:"\n\n**食材**：五"
+
+...
+
+event:done
+data:{}
+```
+
+**预期输出（离线模式）**：
+
+```
+event:status
+data:"离线规则模式：未配置大模型，使用站内检索作答"
+
+event:token
+data:"🧠 当前是「离线规则模式」"
+
+...
+
+event:done
+data:{}
+```
+
+**关键观察点**：
+
+1. `tool` 事件**成对出现**（`start` 紧跟 `end`），说明工具调用闭环正常
+2. 多个不同工具名出现，说明 ReAct **多轮循环**生效
+3. `token` 事件的 `data:` 是**带引号的 JSON 字符串**，其中的 `\n` 是转义后的字面量——**这正是防丢字设计生效的证据**
+4. 最后一帧必为 `done`，即使中途出错
+5. 在线模式下，工作目录 `backend/` 的控制台应能看到 `Agent 调用工具：search_recipes 参数={"keyword":"红烧肉"}` 的 INFO 日志
+
+**错误路径验证**（观察 `error` 事件）：
+
+```powershell
+# 空消息 → 应收到 status「请先输入你的问题～」后 done
+curl.exe -N -X POST http://localhost:8081/agent/chat -H "Content-Type: application/json" -H "Authorization: Bearer $token" -d '{\"sessionId\":\"e1\",\"message\":\"\"}'
+
+# 故意填错 Key 后重启 → 应收到 error 事件：大模型返回 401：...
+curl.exe -N -X POST http://localhost:8081/agent/chat -H "Content-Type: application/json" -H "Authorization: Bearer $token" -d '{\"sessionId\":\"e2\",\"message\":\"你好\"}'
+```
+
+**无 Token 验证鉴权**（应返回 401）：
+
+```powershell
+curl.exe -i -X POST http://localhost:8081/agent/chat -H "Content-Type: application/json" -d '{\"sessionId\":\"x\",\"message\":\"hi\"}'
+```
+
+---
+
+### 9.4 清空会话记忆
+
+```powershell
+curl.exe -s -X POST http://localhost:8081/agent/session/clear `
+  -H "Content-Type: application/json" `
+  -H "Authorization: Bearer $token" `
+  -d '{\"sessionId\":\"mem-001\"}'
+```
+
+清空后再用同一 `sessionId` 问「它的食材有哪些？」，应**不再知道「它」指什么**——即验证记忆确实被清除。
+
+也可用 `health` 的 `activeSessions` 字段观察会话数变化。
+
+---
+
+### 9.5 重建 RAG 知识库
+
+```powershell
+curl.exe -s -X POST http://localhost:8081/agent/knowledge/reindex -H "Authorization: Bearer $token"
+```
+
+预期：
+
+```json
+{
+  "code": "200",
+  "msg": "成功",
+  "data": { "knowledgeChunks": 42, "retrievalMode": "keyword" }
+}
+```
+
+**使用时机**：通过后台新增/修改菜谱、食材、分类后，知识库不会自动刷新（它是内存态），需调用此接口或重启后端。重建后 `health` 的 `knowledgeChunks` 应同步变化。
+
+**验证检索是否真的工作**：
+
+```powershell
+# 问一个知识性问题，在线模式下应触发 search_knowledge 工具
+curl.exe -N -X POST http://localhost:8081/agent/chat `
+  -H "Content-Type: application/json" -H "Authorization: Bearer $token" `
+  -d '{\"sessionId\":\"kb-001\",\"message\":\"土豆和牛肉搭配有什么讲究？\"}'
+```
+
+在输出中应看到 `event:tool` + `data:{"name":"search_knowledge","status":"start"}`。
+
+---
+
+### 9.6 建议的回归测试问题清单
+
+覆盖 7 个工具、两种模式、记忆、降级与异常路径。**「期望工具」列可用 SSE 的 `tool` 事件核对**。
+
+| # | 测试问题 | 期望触发的工具 | 验证点 |
+|---|---|---|---|
+| 1 | 站内一共有多少道菜谱？ | `get_site_stats` | 工具调用 + 数字与数据库一致 |
+| 2 | 有哪些菜谱分类？ | `list_classifications` | 分类名与后台一致 |
+| 3 | 红烧肉怎么做？ | `search_recipes` → `get_recipe_detail` | **两段式多轮调用**，验证 ReAct 循环 |
+| 4 | 搜索一下汤类的菜 | `search_recipes`（带 keyword） | 关键词参数传递 |
+| 5 | 按分类看看家常菜有哪些 | `list_classifications` → `search_recipes`（带 classifyId） | **跨工具参数传递**（模型从上一个工具结果取 ID） |
+| 6 | 土豆有什么营养？ | `search_materials` | 食材检索 |
+| 7 | 我有土豆和牛肉，能做什么菜？ | `recommend_recipes`（带 ingredients 数组） | **数组参数**解析 |
+| 8 | 土豆和牛肉搭配有什么讲究？ | `search_knowledge` | RAG 检索命中 |
+| 9 | 红烧肉怎么做？→ 它的食材有哪些？ | 第 2 问应能解析「它」 | **Chat Memory 多轮记忆** |
+| 10 | 你好 | 不调工具，直接回答 | 闲聊路径不误触工具 |
+| 11 | 站内有佛跳墙吗？ | `search_recipes` 返回空后如实告知 | **不编造**（Prompt 准则 7） |
+| 12 | 火星上的菜谱有哪些？ | 工具无结果 → 诚实说明 | 幻觉抑制 |
+| 13 | 清空记忆后再问「它是什么」 | — | **记忆清除生效** |
+| 14 | 不配置 Key 跑问题 1~3 | 离线模式，走 `human*()` 方法 | **优雅降级** |
+| 15 | 把 `embedding-model` 设为错误值 | 语义检索失败 → 回退关键词 | **检索回退**（看日志 warn） |
+| 16 | 把 `api-key` 设为无效值 | `error` 事件「大模型返回 401」 | 错误事件路径，前端不白屏 |
+| 17 | 连续快速发送多条消息 | — | 线程池并发 + 会话隔离 |
+| 18 | 发送途中关闭页面 | — | `AbortError` 静默处理，后端无异常堆栈 |
+| 19 | 新增一道菜谱后调 reindex，再提问 | `search_recipes` | **知识库刷新生效** |
+| 20 | 回答中包含 Markdown 列表/加粗 | — | 前端渲染正确，且 **`\n` 未被 SSE 分帧破坏**（无丢字） |
+
+---
+
+## 10. 设计决策：为什么自研而不用 LangChain4j / Spring AI
+
+### 10.1 决策结论
+
+**主动选择零第三方 AI 依赖**，仅用 JDK 内置 `java.net.http.HttpClient` + Spring Boot 自带的 Jackson + Spring 的 `SseEmitter` 实现完整 Agent 运行时。
+
+### 10.2 原因
+
+**原因一：Maven 环境受限，无法验证新依赖**
+
+引入 LangChain4j / Spring AI 会带来一串传递依赖（各自的 HTTP 客户端、JSON 库、向量库适配、Reactor 等）。在当前的构建环境下无法可靠地完成依赖解析与版本兼容性验证，存在「引入即构建失败」的风险。而 `HttpClient` / Jackson / `SseEmitter` 都是**已经在 classpath 上**的东西——用它们，构建风险为零。
+
+**原因二：主动想理解底层机制**
+
+ReAct 循环、Function Calling 协议、RAG 检索、SSE 分帧这些机制，如果用框架只是一行注解（`@Tool`、`AiServices`），就很难讲清楚「模型返回的 assistant 消息为什么要原样回灌」「SSE 载荷为什么必须 JSON 编码」这类真正决定成败的细节。手写一遍之后：
+
+- Function Calling 的本质就是 **OpenAI tools 协议的一段 JSON**，协议走通了，任何兼容服务都能接
+- ReAct 的本质就是一个 **while 循环 + 消息数组累积**，轮数上限是防死循环的必要工程约束
+- RAG 的本质就是 **检索 + 拼 prompt**，向量库不是必需品
+- SSE 的本质就是 **`event:` / `data:` + 空行分帧**，踩过「换行破坏分帧」的坑才算真懂
+
+**原因三：可迁移性强，无供应商锁定**
+
+代码走的是 **OpenAI 兼容协议**，因此 DeepSeek / 通义千问 / OpenAI / Ollama 之间**只改 3 行配置**即可切换。如果绑定某个框架的原生 SDK，切换成本反而更高。
+
+**原因四：契合项目体量**
+
+Agent 部分仅 10 个文件，总规模约 1600 行。这个体量下，一个框架带来的抽象层级（`ChatLanguageModel` → `ChatClient` → `AiServices` → `ToolProvider`）反而是负资产——排查问题时要在多层封装之间跳转。
+
+### 10.3 概念对照表
+
+自研实现与两大主流框架的对应关系。**看完这张表可以确认：本项目没有缺失任何核心能力，只是换了实现方式。**
+
+| 本项目 | LangChain4j | Spring AI |
+|---|---|---|
+| `OpenAiCompatibleClient` | `OpenAiChatModel` / `OpenAiEmbeddingModel` | `OpenAiChatModel` / `OpenAiEmbeddingModel` |
+| `ReActAgent.online()` | `AiServices` | `ChatClient` |
+| `ToolDef` + `RecipeTools` | `@Tool` 注解 | `@Tool` 注解 |
+| `ChatMemoryStore` | `MessageWindowChatMemory` | `ChatMemory` |
+| `RecipeKnowledgeBase` | `EmbeddingStore` + `EmbeddingStoreContentRetriever` | `VectorStore` + `QuestionAnswerAdvisor` |
+| `SseEmitterSink` | `TokenStream` | `Flux<String>` |
+
+补充对应关系：
+
+| 本项目 | LangChain4j | Spring AI |
+|---|---|---|
+| `AgentProperties`（`ai.*`） | `ChatModel` 构造参数 / `application.properties` | `spring.ai.openai.*` |
+| `RecipeTools.dispatch()` | `ToolProvider` / `@Tool` 方法反射调用 | `ToolCallback` |
+| `RecipeKnowledgeBase.reindex()` | `EmbeddingStore.addAll()` + `DocumentSplitter` | `VectorStore.add()` + `TokenTextSplitter` |
+| `RecipeKnowledgeBase.keywordRetrieve()`（关键词通道） | 无直接对应（依赖 EmbeddingStore） | 无直接对应（依赖 VectorStore） |
+| 离线规则模式 | 无直接对应 | 无直接对应 |
+
+> **注意最后两行**：**关键词检索通道**与**离线规则模式**是本项目自研带来的额外收益——主流框架默认假定「有模型可用」，没有 API Key 就直接不可用；本项目则保证了**无 Key 也能演示完整链路**。
+
+### 10.4 如需切换到 LangChain4j 的迁移路径
+
+如果后续条件允许（即 Maven 环境可正常解析依赖），迁移是一个**渐进式**过程，不需要推倒重来。
+
+**第 1 步：引入依赖**
+
+```xml
+<dependency>
+    <groupId>dev.langchain4j</groupId>
+    <artifactId>langchain4j</artifactId>
+    <version>1.0.0</version>
+</dependency>
+<dependency>
+    <groupId>dev.langchain4j</groupId>
+    <artifactId>langchain4j-open-ai</artifactId>
+    <version>1.0.0</version>
+</dependency>
+```
+
+**第 2 步：用 `@Tool` 重写 `RecipeTools`**
+
+把现有的 `toolDefs()` 手写 Schema 换成注解声明——**方法体（真正的业务逻辑）可以原封不动保留**：
+
+```java
+// 迁移前：手写 JSON Schema
+defs.add(new ToolDef("search_recipes",
+    "按关键词或分类搜索站内菜谱…",
+    objectSchema(props(
+        "keyword", stringSchema("搜索关键词…"),
+        "classifyId", integerSchema("分类ID…"),
+        "pageNum", integerSchema("页码…"),
+        "pageSize", integerSchema("每页条数…")
+    ), List.of())));
+
+// 迁移后：注解声明
+@Tool("按关键词或分类搜索站内菜谱。当用户想找某道菜、某类菜时调用。")
+public String searchRecipes(
+        @P("搜索关键词，例如「红烧肉」「汤」") String keyword,
+        @P("分类ID，取自 list_classifications") Long classifyId,
+        @P("页码，从 1 开始") Integer pageNum,
+        @P("每页条数") Integer pageSize) {
+    // ... 原有的 Service 调用逻辑保持不变
+    return mapper.writeValueAsString(result);
+}
+```
+
+7 个工具逐一照此改造即可。`dispatch()` 整个 switch 可以删除（由框架反射调用）。
+
+**第 3 步：用 `AiServices` 替代 `ReActAgent` 的手写循环**
+
+```java
+interface RecipeAssistant {
+    String chat(@MemoryId String sessionId, @UserMessage String message);
+}
+
+RecipeAssistant assistant = AiServices.builder(RecipeAssistant.class)
+        .chatLanguageModel(chatModel)
+        .tools(new RecipeTools(...))
+        .chatMemoryProvider(id -> MessageWindowChatMemory.withMaxMessages(10))
+        .build();
+```
+
+`ReActAgent.online()` 中的 `for (int round = 0; round < maxRounds; round++)` 循环、消息数组拼装、`tool_calls` 解析、Observation 回灌全部由框架接管。
+
+**第 4 步：`RecipeKnowledgeBase` 迁移为 `EmbeddingStore`**
+
+```java
+EmbeddingStoreContentRetriever retriever = EmbeddingStoreContentRetriever.builder()
+        .embeddingStore(store)          // InMemoryEmbeddingStore
+        .embeddingModel(embeddingModel)
+        .maxResults(props.getRagTopK())
+        .minScore(0.15)                 // 对应本项目的余弦阈值
+        .build();
+```
+
+> 保留建议：**关键词检索通道可以保留为降级路径**，在 EmbeddingStore 不可用时兜底。
+
+**第 5 步：Controller 与 SSE 协议保持不变**
+
+这是本项目分层带来的最大好处——`AgentController` 的 5 个接口、SSE 的 5 类事件名与 JSON 载荷格式、前端的 `agent.js` **全部无需修改**。只需把 `ReActAgent` 内部的实现替换掉，`AgentEventSink` 抽象层继续作为 SSE 输出的出口。
+
+**迁移工作量评估**：
+
+| 文件 | 改动程度 | 说明 |
+|---|---|---|
+| `pom.xml` | 新增 2 个依赖 | — |
+| `RecipeTools.java` | 方法签名加注解，`toolDefs()`/`dispatch()` 可删 | 业务逻辑不变 |
+| `ReActAgent.java` | 循环体替换为 `AiServices` 调用 | `AgentEventSink` 保留 |
+| `RecipeKnowledgeBase.java` | 检索部分替换为 Retriever | 关键词通道可保留 |
+| `ChatMemoryStore.java` | 可替换为 `MessageWindowChatMemory` | — |
+| `OpenAiCompatibleClient.java` | 可替换为 `OpenAiChatModel` | — |
+| `AgentController.java` | **不变** | 分层解耦的红利 |
+| 前端全部文件 | **不变** | 协议未变 |
+| `application.yml` | `ai.*` 可映射到框架配置 | 建议保留自有配置项便于切换 |
+
+---
+
+## 11. 设计亮点
+
+### 亮点 1：零第三方 AI 依赖，用 JDK + 框架自带能力实现完整 Agent
+
+`pom.xml` 未新增任何依赖。LLM 通信、JSON 解析、流式输出全部使用已在 classpath 上的能力：`java.net.http.HttpClient`（JDK 11+ 内置）、Jackson（Spring Boot 自带）、`SseEmitter`（Spring MVC 内置）。**构建风险为零，部署包体积不增加**，同时把 Function Calling / ReAct / RAG 的实现细节完全暴露在可控的代码里。
+
+### 亮点 2：SSE 载荷统一 JSON 编码，从根本上解决「换行破坏分帧」丢字问题
+
+SSE 用空行分帧，而 Markdown 回答必然含换行——朴素实现会把一个回答切碎，前端表现为丢字错乱。本项目在 `SseEmitterSink.encode()` 中统一 `mapper.writeValueAsString()`，把 `\n` 转义为字面量 `\\n`，前端 `decodePayload()` 对称还原。**这是一个只有真正手写过 SSE 才会踩到并解决的坑**。
+
+### 亮点 3：四层优雅降级，无 Key 也能完整演示
+
+`online()` 判定凭据不全 → **离线规则模式**（基于站内数据作答）；无 `embedding-model` → **关键词检索**；语义检索异常 → **自动回退关键词**；工具异常 → 返回 `{"error":...}` 而非抛异常。这四层降级意味着：**评审者 clone 下来不配置任何 Key 就能跑通全流程**，不会出现白屏或报错，演示成本极低。
+
+### 亮点 4：`AgentEventSink` 抽象，一套逻辑同时支撑流式与非流式
+
+`ReActAgent` 不直接依赖 `SseEmitter`，而是面向 `AgentEventSink` 接口编程，提供两个实现：`SseEmitterSink`（推送 SSE）与 `StringBuilderSink`（累积字符串）。因此 `POST /agent/chat`（流式）与 `POST /agent/chat/message`（非流式）**复用同一份推理逻辑**，测试时可以先跑通非流式路径再调前端，排障效率显著提升。
+
+### 亮点 5：工具层复用既有 Service，零重复 SQL
+
+`RecipeTools` 的 7 个工具全部通过构造器注入复用 `FoodsMenuInfoService` / `FoodsMaterialInfoService` / `ClassifyInfoService` / `AdminInfoService` / `UserInfoService`，**没有一条新写的 SQL、没有一个新的 Mapper**。原有业务能力「一处实现，两处入口」（Controller + Agent Tool），改造对原有代码侵入为零。
+
+### 亮点 6：关键词检索通道自带中文优化
+
+在没有向量模型的情况下，`RecipeKnowledgeBase.keywordScore()` 实现了分层打分：整串命中 +6.0、**汉字二元组（bigram）** 每个 +1.5、单字 +0.5、英文词（长度 ≥2）+2.0。二元组是对中文的针对性优化——比单字精确、比整串宽松，无需分词库即可获得可用的召回质量。
+
+### 亮点 7：OpenAI 兼容协议带来零锁定切换
+
+`base-url` + `/chat/completions` 与 `/embeddings` 的标准化拼接，加上独立的 `embedding-base-url`（可指向与对话服务不同的厂商），使得 DeepSeek / 通义千问 / OpenAI / Ollama 之间切换**只需要改配置**。本地 Ollama 更是可以零成本离线跑通在线模式。
+
+### 亮点 8：并发与资源安全的多重保障
+
+- `agentExecutor` 用 **4 线程守护池**（`setDaemon(true)`），既不阻塞 Tomcat 请求线程，也不阻碍应用关闭
+- `ChatMemoryStore` 用 `ConcurrentHashMap` + 对 `ArrayDeque` 加 `synchronized`，兼顾并发与一致性
+- `RecipeKnowledgeBase.chunkEmbeddings` 用 `volatile` + 双重检查锁，避免并发重复向量化
+- 记忆有**窗口 + TTL 双重淘汰**，防止内存无限增长
+- 前端 `AbortController` + 后端 `catch` 静默，断连不产生异常堆栈
+
+---
+
+## 12. 后续扩展路线
+
+| 方向 | 现状 | 可演进方案 | 涉及改动 |
+|---|---|---|---|
+| **记忆持久化** | 内存 `ConcurrentHashMap`，重启即失，多实例不共享 | 迁移到 **Redis**（`StringRedisTemplate` + List 或 Hash 存消息窗口，`EXPIRE` 实现 TTL）；或落库新建 `chat_memory` 表 | 只需重写 `ChatMemoryStore` 内部实现，对外接口不变 |
+| **向量持久化** | 内存 `CopyOnWriteArrayList`，重启需重建 | 接入向量库（Redis Stack / Milvus / Qdrant / pgvector），或先用「向量落库 + 启动加载」的轻量方案 | 替换 `RecipeKnowledgeBase` 的存储与检索层 |
+| **知识库自动刷新** | 需手动调 `/agent/knowledge/reindex` | 监听菜谱/食材/分类的增删改事件（Spring `ApplicationEvent`）后自动 reindex；或加定时任务 + 版本号比对 | 新增事件监听器，`RecipeTools` 侧发布事件 |
+| **真流式输出** | 目前是「拿到完整答案后按 6 字符切片 + sleep 8ms」模拟打字机 | 接入 LLM 的 **stream=true** SSE 响应，边收边转发，首字延迟大幅降低 | 在 `OpenAiCompatibleClient` 增加流式方法（`BodyHandlers.ofLines()`），`SseEmitterSink` 改为直通 |
+| **多模态** | 纯文本 | 图片上传（项目已有文件上传能力）→ 多模态模型识别食材照片 → 反查菜谱；或给菜谱生成配图 | 新增 `analyze_image` 工具 + 前端图片上传入口 |
+| **工作流编排** | 单个 Agent 串行 ReAct | 引入多 Agent 协作（如「检索 Agent + 推荐 Agent + 营养分析 Agent」）或状态机编排（复杂流程拆成显式步骤） | 新增编排层，`ReActAgent` 作为可复用节点 |
+| **可观测性** | `log.info` 打印工具调用 | 结构化埋点：每轮的 token 消耗、工具调用耗时、轮数分布、失败率；接入 Micrometer + Prometheus + Grafana；或落库做对话审计 | 在 `ReActAgent` 与 `AgentController` 增加指标埋点 |
+| **成本与限流** | 无 | 按用户/会话限流；单日 token 配额；超限提示；缓存高频问题的答案 | 新增拦截器 + 计数存储 |
+| **安全加固** | JWT + HTML 转义 | Prompt 注入防护（工具白名单、参数校验、敏感操作二次确认）；输出内容审核；工具调用审计日志 | 在 `RecipeTools.dispatch()` 与 `markdown.js` 增加校验层 |
+| **评测体系** | 手工回归（本文档 9.6 节 20 条） | 建立自动化评测集：固定问题集 + 期望工具序列 + 期望关键字段，CI 中跑回归 | 新增测试用例与断言脚本 |
+| **前端体验** | 基础对话 | 消息持久化到 localStorage；历史会话列表；回答内引用来源卡片（展示命中的知识切片）；一键复制 | 仅前端改动 |
+
+---
+
+## 附录 A：常见问题排查（FAQ）
+
+| 现象 | 可能原因 | 排查方法 |
+|---|---|---|
+| `/agent/**` 返回 401 | 未带 Token 或 Token 过期 | 检查 `Authorization: Bearer <token>` 头；重新登录取 Token |
+| `online: false`，一直是离线模式 | `base-url` / `api-key` / `model` 任一为空 | 调 `/agent/health` 查看这三项；检查 `DEEPSEEK_API_KEY` 环境变量是否生效；检查 `spring.profiles.active` 是否加载了 `application-local.yml` |
+| 前端丢字、回答断句错乱 | SSE 载荷未做 JSON 编码 | 确认 `SseEmitterSink.encode()` 存在且被所有事件使用；前端 `decodePayload()` 是否调用 |
+| `knowledgeChunks: 0` | 数据库为空，或知识库未建 | 确认 `init.sql` 已导入；调 `/agent/knowledge/reindex` 后重试 |
+| `retrievalMode` 一直是 `keyword` | 未配置 `embedding-model`，或所用服务商不支持 embeddings | DeepSeek 属预期行为；通义/OpenAI 用户检查 `embedding-model` 拼写 |
+| 语义检索报错但对话仍可用 | 触发了自动回退（设计如此） | 查看后端日志中的 `语义检索失败，回退关键词检索：...` |
+| 工具没被调用 | 模型能力不足或 Prompt 未被遵循 | 确认 `tools` 数组有 7 项；查看日志是否有 `Agent 调用工具：...`；尝试更明确的提问 |
+| `大模型返回 401：...` | API Key 无效或额度耗尽 | 核对 Key；确认 `base-url` 路径前缀（如 `/v1`）正确 |
+| `大模型返回 404：...` | `base-url` 拼接错误 | 记住规则：代码会拼 `{base-url}/chat/completions`，所以 `base-url` **不能**以 `/chat/completions` 结尾 |
+| 达到轮数上限仍无答案 | `max-iterations` 太小或问题过于复杂 | 调大 `ai.max-iterations`；或把问题拆细 |
+| 回答被截断 | `max-tokens` 太小 | 调大 `ai.max-tokens` |
+| 前端 404 / 接口连不上 | 端口不一致 | 后端须为 8081，`vite.config.js` 的 proxy `target` 须为 `http://localhost:8081`，前端端口 5174 |
+| 多轮对话「失忆」 | 超过 `memory-window` 或超过 `memory-ttl-minutes` | 调大对应配置；确认前端每次请求携带**同一个** `sessionId` |
+| 新增菜谱后 AI 查不到 | 知识库是内存态，未刷新 | 调 `POST /agent/knowledge/reindex` |
+| 关闭页面后后端刷异常日志 | 客户端断开 | 本项目已静默处理；若仍有，检查是否走了未捕获的路径 |
+
+---
+
+## 附录 B：一键验证脚本（PowerShell）
+
+保存为 `verify-agent.ps1` 放在项目根目录，按顺序跑完 5 个接口：
+
+```powershell
+# 需先启动后端（8081）。用法：powershell -ExecutionPolicy Bypass -File verify-agent.ps1
+$ErrorActionPreference = 'Stop'
+$base = 'http://localhost:8081'
+
+Write-Host "`n[1/5] 登录获取 Token ..." -ForegroundColor Cyan
+$body = @{ name = 'admin'; password = '123456'; level = 1 } | ConvertTo-Json
+$login = Invoke-RestMethod -Uri "$base/login" -Method Post -ContentType 'application/json' -Body $body
+$token = $login.data.token
+if (-not $token) { throw '登录失败，未拿到 token' }
+$headers = @{ Authorization = "Bearer $token" }
+Write-Host "  Token 获取成功：$($token.Substring(0, 20))..." -ForegroundColor Green
+
+Write-Host "`n[2/5] 健康检查 /agent/health ..." -ForegroundColor Cyan
+$health = Invoke-RestMethod -Uri "$base/agent/health" -Headers $headers
+$h = $health.data
+Write-Host "  enabled        : $($h.enabled)"
+Write-Host "  online         : $($h.online)"
+Write-Host "  mode           : $($h.mode)"
+Write-Host "  model          : $($h.model)"
+Write-Host "  retrievalMode  : $($h.retrievalMode)"
+Write-Host "  knowledgeChunks: $($h.knowledgeChunks)"
+Write-Host "  tools ($($h.tools.Count))     : $($h.tools -join ', ')"
+
+Write-Host "`n[3/5] 非流式对话 /agent/chat/message ..." -ForegroundColor Cyan
+$chatBody = @{ sessionId = 'verify-001'; message = '站内一共有多少道菜谱？' } | ConvertTo-Json
+$chat = Invoke-RestMethod -Uri "$base/agent/chat/message" -Method Post -ContentType 'application/json' -Headers $headers -Body $chatBody
+Write-Host "  mode  : $($chat.data.mode)"
+Write-Host "  answer: $($chat.data.answer.Substring(0, [Math]::Min(120, $chat.data.answer.Length)))..."
+
+Write-Host "`n[4/5] 重建知识库 /agent/knowledge/reindex ..." -ForegroundColor Cyan
+$re = Invoke-RestMethod -Uri "$base/agent/knowledge/reindex" -Method Post -Headers $headers
+Write-Host "  knowledgeChunks: $($re.data.knowledgeChunks)"
+Write-Host "  retrievalMode  : $($re.data.retrievalMode)"
+
+Write-Host "`n[5/5] 流式对话 /agent/chat（只打印前 20 行 SSE 帧）..." -ForegroundColor Cyan
+$tmp = [System.IO.Path]::GetTempFileName()
+Start-Process -FilePath 'curl.exe' -ArgumentList @(
+  '-N','-s','-X','POST',"$base/agent/chat",
+  '-H','Content-Type: application/json',
+  '-H',"Authorization: Bearer $token",
+  '-d','{\"sessionId\":\"verify-sse\",\"message\":\"有哪些菜谱分类？\"}'
+) -RedirectStandardOutput $tmp -NoNewWindow -Wait
+Get-Content $tmp -TotalCount 20 | ForEach-Object { Write-Host "  $_" }
+Remove-Item $tmp -ErrorAction SilentlyContinue
+
+Write-Host "`n验证完成。" -ForegroundColor Green
+```
+
+---
+
+## 附录 C：术语速查
+
+| 术语 | 全称 / 含义 | 本项目对应 |
+|---|---|---|
+| **Agent** | 智能体：能自主推理并调用工具完成任务的系统 | `ReActAgent` |
+| **ReAct** | Reason + Act：推理与行动交替的循环范式 | `ReActAgent.online()` 的 for 循环 |
+| **Function Calling** | 模型以结构化方式请求调用本地函数 | `ToolDef` + `RecipeTools` |
+| **Tools** | 暴露给模型的函数清单（OpenAI 协议） | `toolDefs()` 返回的 7 个 `ToolDef` |
+| **Observation** | 工具执行结果，回灌给模型作为下一轮输入 | `dispatch()` 返回的 JSON 字符串 |
+| **Final Answer** | 模型给出的最终回答，终止循环 | `msg.path("content")` |
+| **RAG** | Retrieval-Augmented Generation，检索增强生成 | `RecipeKnowledgeBase` |
+| **Embedding** | 文本向量化 | `OpenAiCompatibleClient.embed()` |
+| **余弦相似度** | 两个向量的夹角余弦，衡量语义相近程度 | `RecipeKnowledgeBase.cosine()`，阈值 0.15 |
+| **Chat Memory** | 多轮对话上下文记忆 | `ChatMemoryStore` |
+| **SSE** | Server-Sent Events，服务端单向流式推送 | `SseEmitter` + `SseEmitterSink` |
+| **打字机效果** | 文本分片渐进显示 | `tokenStream()` 每 6 字符一片 |
+| **Prompt Engineering** | 提示词工程 | `buildSystemPrompt()` 的 7 条准则 |
+| **优雅降级** | 依赖不可用时保持核心功能可用 | 离线规则模式 + 检索回退 |
+| **JWT** | JSON Web Token，无状态鉴权 | 项目原有，`/agent/**` 复用 |
+
+---
+
+*本文档描述的全部技术细节均可在源码中核对。如发现文档与代码不一致，以代码为准。*
