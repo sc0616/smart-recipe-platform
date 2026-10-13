@@ -266,7 +266,7 @@ smart-recipe-platform/
 │       ├── utils/markdown.js       安全 Markdown 渲染
 │       └── views/assistant/        AI 对话页
 ├── sql/init.sql                    建库建表 + 种子数据
-└── 项目介绍.md                      详细项目文档（含面试问答准备）
+└── AI-AGENT.md                     AI Agent 改造说明
 ```
 
 ---
@@ -279,14 +279,13 @@ smart-recipe-platform/
 3. **上传路径三处不一致** —— 统一配置源，路径拼接改用 `File` 对象消除「结尾斜杠」陷阱。
 4. **上下文膨胀** —— 消息窗口 + TTL 淘汰双重限制。
 
-> 详细的问题排查过程见 [项目介绍.md](项目介绍.md) 第八章。
+> 详细的问题排查过程见 [AI-AGENT.md](AI-AGENT.md) 附录 A。
 
 ---
 
 ## 文档
 
-- [项目介绍.md](项目介绍.md) —— 完整项目文档、架构说明、AI Agent 原理、**面试问答准备**
-- [AI-AGENT.md](AI-AGENT.md) —— AI Agent 化改造说明、配置项、接口自测指南
+- [AI-AGENT.md](AI-AGENT.md) —— AI Agent 化改造说明、配置项、接口自测指南、问题排查 FAQ
 - [sql/init.sql](sql/init.sql) —— 数据库初始化脚本
 
 ---
