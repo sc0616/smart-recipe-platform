@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="芒果">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffb14e"/>
+      <stop offset="100%" stop-color="#e8820f"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="376.7"
+              cy="195.2"
+              r="8" fill="#ffffff" opacity="0.12"/><circle cx="330.0"
+              cy="177.4"
+              r="9" fill="#ffffff" opacity="0.12"/><circle cx="297.4"
+              cy="236.0"
+              r="6" fill="#ffffff" opacity="0.12"/><circle cx="215.7"
+              cy="65.2"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="163.5"
+              cy="60.6"
+              r="4" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+    <ellipse cx="200" cy="276" rx="112" ry="32" fill="#ffffff"/>
+    <circle cx="200" cy="206" r="78" fill="#ffb14e"/>
+    <ellipse cx="172" cy="178" rx="26" ry="18" fill="#ffffff" opacity="0.35"/>
+    <path d="M200 130 C208 108 224 96 246 92" stroke="#4c9c3a" stroke-width="9"
+          fill="none" stroke-linecap="round"/>
+    <path d="M200 142 C184 120 154 118 140 130 C158 146 182 148 200 142 Z" fill="#4c9c3a"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="36" font-weight="700" fill="#ffffff">芒果</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">食材 · 水果</text>
+</svg>

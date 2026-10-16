@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="莲藕排骨汤">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#63cddd"/>
+      <stop offset="100%" stop-color="#2b93ab"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="318.8"
+              cy="244.2"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="55.0"
+              cy="168.2"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="368.7"
+              cy="134.0"
+              r="8" fill="#ffffff" opacity="0.12"/><circle cx="191.0"
+              cy="70.5"
+              r="9" fill="#ffffff" opacity="0.12"/><circle cx="280.7"
+              cy="99.5"
+              r="6" fill="#ffffff" opacity="0.12"/>
+  
+    
+  <ellipse cx="200" cy="288" rx="142" ry="20" fill="rgba(0,0,0,0.13)"/>
+  <path d="M68 194 L332 194
+           C332 292 262 322 200 322
+           C138 322 68 292 68 194 Z"
+        fill="#fbfbfb"/>
+  <ellipse cx="200" cy="194" rx="132" ry="26" fill="#ffffff"/>
+  <ellipse cx="200" cy="196" rx="120" ry="20" fill="#f2e6cf"/>
+    <circle cx="172" cy="202" r="26" fill="#f3e3cd"/>
+       <circle cx="172" cy="202" r="9" fill="#e2c9a6"/>
+       <circle cx="158" cy="193" r="6" fill="#e2c9a6"/>
+       <circle cx="186" cy="210" r="6" fill="#e2c9a6"/><circle cx="234" cy="206" r="26" fill="#f3e3cd"/>
+       <circle cx="234" cy="206" r="9" fill="#e2c9a6"/>
+       <circle cx="220" cy="197" r="6" fill="#e2c9a6"/>
+       <circle cx="248" cy="214" r="6" fill="#e2c9a6"/><circle cx="202" cy="230" r="26" fill="#f3e3cd"/>
+       <circle cx="202" cy="230" r="9" fill="#e2c9a6"/>
+       <circle cx="188" cy="221" r="6" fill="#e2c9a6"/>
+       <circle cx="216" cy="238" r="6" fill="#e2c9a6"/>
+    <rect x="172" y="172" width="52" height="24" rx="8" fill="#a9542a"/><rect x="130" y="220" width="52" height="24" rx="8" fill="#a9542a"/><rect x="222" y="222" width="52" height="24" rx="8" fill="#a9542a"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="29" font-weight="700" fill="#ffffff">莲藕排骨汤</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">汤羹</text>
+</svg>

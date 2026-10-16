@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="芒果糯米饭">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffa8c8"/>
+      <stop offset="100%" stop-color="#ec6199"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="299.2"
+              cy="136.4"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="45.9"
+              cy="184.3"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="244.3"
+              cy="105.0"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="268.0"
+              cy="118.4"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="221.2"
+              cy="282.4"
+              r="7" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="222" rx="132" ry="102.96000000000001" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="214" rx="132" ry="102.96000000000001" fill="#ffffff"/>
+  <ellipse cx="200" cy="214" rx="116" ry="89.96000000000001" fill="#fafafa"/>
+  <ellipse cx="200" cy="214" rx="102" ry="78.96000000000001" fill="#f4f4f4"/>
+    <path d="M140 210 C140 172 190 158 214 176 C244 198 240 244 200 252
+             C164 258 140 240 140 210 Z" fill="#fbf7ee"/>
+    <path d="M146 208 C146 178 188 166 208 180" stroke="#f0e8d8" stroke-width="5" fill="none"/>
+    <ellipse cx="262" cy="186" rx="26" ry="20.8" fill="#f5c542"/>
+       <ellipse cx="254.2" cy="178.2" rx="10.4" ry="7.8"
+        fill="#ffffff" opacity="0.4"/><ellipse cx="286" cy="226" rx="22" ry="17.6" fill="#f5c542"/>
+       <ellipse cx="279.4" cy="219.4" rx="8.8" ry="6.6"
+        fill="#ffffff" opacity="0.4"/><ellipse cx="250" cy="246" rx="20" ry="16" fill="#f5c542"/>
+       <ellipse cx="244" cy="240" rx="8" ry="6"
+        fill="#ffffff" opacity="0.4"/>
+    <path d="M186 168 C196 152 216 148 228 158" stroke="#77b84e" stroke-width="6"
+          fill="none" stroke-linecap="round"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="29" font-weight="700" fill="#ffffff">芒果糯米饭</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">甜品</text>
+</svg>

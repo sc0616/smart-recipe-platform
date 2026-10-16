@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="凉拌木耳">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8ed471"/>
+      <stop offset="100%" stop-color="#47993c"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="126.0"
+              cy="73.7"
+              r="4" fill="#ffffff" opacity="0.12"/><circle cx="15.4"
+              cy="206.4"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="144.0"
+              cy="102.0"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="85.7"
+              cy="194.8"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="364.9"
+              cy="212.9"
+              r="8" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="218" rx="138" ry="107.64" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="210" rx="138" ry="107.64" fill="#ffffff"/>
+  <ellipse cx="200" cy="210" rx="122" ry="94.64" fill="#fafafa"/>
+  <ellipse cx="200" cy="210" rx="108" ry="83.64" fill="#f4f4f4"/>
+    <path d="M152 172 C178 180 180 212 156 224
+        C130 232 118 204 132 184 Z"
+        fill="#4a3b35" transform="rotate(20 152 198)"/>
+        <path d="M148 184 C162 190 164 206 154 212"
+        stroke="#6d5a52" stroke-width="4" fill="none"
+        transform="rotate(20 152 198)"/><path d="M214 162 C240 170 242 202 218 214
+        C192 222 180 194 194 174 Z"
+        fill="#4a3b35" transform="rotate(-16 214 188)"/>
+        <path d="M210 174 C224 180 226 196 216 202"
+        stroke="#6d5a52" stroke-width="4" fill="none"
+        transform="rotate(-16 214 188)"/><path d="M252 190 C278 198 280 230 256 242
+        C230 250 218 222 232 202 Z"
+        fill="#4a3b35" transform="rotate(12 252 216)"/>
+        <path d="M248 202 C262 208 264 224 254 230"
+        stroke="#6d5a52" stroke-width="4" fill="none"
+        transform="rotate(12 252 216)"/><path d="M176 214 C202 222 204 254 180 266
+        C154 274 142 246 156 226 Z"
+        fill="#4a3b35" transform="rotate(-18 176 240)"/>
+        <path d="M172 226 C186 232 188 248 178 254"
+        stroke="#6d5a52" stroke-width="4" fill="none"
+        transform="rotate(-18 176 240)"/><path d="M232 226 C258 234 260 266 236 278
+        C210 286 198 258 212 238 Z"
+        fill="#4a3b35" transform="rotate(16 232 252)"/>
+        <path d="M228 238 C242 244 244 260 234 266"
+        stroke="#6d5a52" stroke-width="4" fill="none"
+        transform="rotate(16 232 252)"/><path d="M196 242 C222 250 224 282 200 294
+        C174 302 162 274 176 254 Z"
+        fill="#4a3b35" transform="rotate(-8 196 268)"/>
+        <path d="M192 254 C206 260 208 276 198 282"
+        stroke="#6d5a52" stroke-width="4" fill="none"
+        transform="rotate(-8 196 268)"/>
+    <circle cx="188" cy="172" r="5" fill="#b8231c"/><circle cx="248" cy="194" r="5" fill="#b8231c"/><circle cx="162" cy="226" r="5" fill="#b8231c"/>
+    <ellipse cx="216" cy="286" rx="18" ry="5" fill="#4f9d3a" opacity="1" transform="rotate(-6 216 286)"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="32" font-weight="700" fill="#ffffff">凉拌木耳</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">凉菜</text>
+</svg>

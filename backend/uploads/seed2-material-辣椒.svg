@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="辣椒">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8fd46a"/>
+      <stop offset="100%" stop-color="#4c9c3a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="310.1"
+              cy="230.9"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="318.5"
+              cy="259.9"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="118.2"
+              cy="113.8"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="144.5"
+              cy="240.3"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="237.4"
+              cy="83.6"
+              r="4" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+    <ellipse cx="200" cy="268" rx="118" ry="34" fill="#ffffff"/>
+    <path d="M200 108 C258 120 292 168 286 224 C280 274 244 300 200 300
+             C156 300 120 274 114 224 C108 168 142 120 200 108 Z" fill="#8fd46a"/>
+    <path d="M200 120 L200 292" stroke="#ffffff" stroke-width="6" opacity="0.5"/>
+    <path d="M200 172 L150 216 M200 212 L250 254" stroke="#ffffff" stroke-width="5" opacity="0.42"/>
+    <ellipse cx="172" cy="164" rx="26" ry="16" fill="#ffffff" opacity="0.22"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="36" font-weight="700" fill="#ffffff">辣椒</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">食材 · 叶菜</text>
+</svg>

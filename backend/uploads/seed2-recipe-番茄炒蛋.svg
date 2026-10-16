@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="番茄炒蛋">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff9a56"/>
+      <stop offset="100%" stop-color="#e8722f"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="52.8"
+              cy="137.6"
+              r="9" fill="#ffffff" opacity="0.12"/><circle cx="157.3"
+              cy="103.8"
+              r="9" fill="#ffffff" opacity="0.12"/><circle cx="65.2"
+              cy="126.1"
+              r="6" fill="#ffffff" opacity="0.12"/><circle cx="348.4"
+              cy="220.5"
+              r="8" fill="#ffffff" opacity="0.12"/><circle cx="208.7"
+              cy="73.7"
+              r="9" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="218" rx="138" ry="107.64" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="210" rx="138" ry="107.64" fill="#ffffff"/>
+  <ellipse cx="200" cy="210" rx="122" ry="94.64" fill="#fafafa"/>
+  <ellipse cx="200" cy="210" rx="108" ry="83.64" fill="#f4f4f4"/>
+    <path d="M124 196 C130 166 198 166 204 196
+        C204 222 124 222 124 196 Z"
+        fill="#d93b2b" transform="rotate(-12 164 196)"/><path d="M198 204 C204 174 272 174 278 204
+        C278 230 198 230 198 204 Z"
+        fill="#d93b2b" transform="rotate(18 238 204)"/><path d="M160 244 C166 214 234 214 240 244
+        C240 270 160 270 160 244 Z"
+        fill="#d93b2b" transform="rotate(5 200 244)"/>
+    <ellipse cx="200" cy="190" rx="34" ry="24" fill="#f5c542"/>
+        <ellipse cx="192" cy="182" rx="14" ry="8" fill="#ffffff" opacity="0.35"/><ellipse cx="166" cy="240" rx="34" ry="24" fill="#f5c542"/>
+        <ellipse cx="158" cy="232" rx="14" ry="8" fill="#ffffff" opacity="0.35"/><ellipse cx="244" cy="250" rx="34" ry="24" fill="#f5c542"/>
+        <ellipse cx="236" cy="242" rx="14" ry="8" fill="#ffffff" opacity="0.35"/><ellipse cx="206" cy="276" rx="34" ry="24" fill="#f5c542"/>
+        <ellipse cx="198" cy="268" rx="14" ry="8" fill="#ffffff" opacity="0.35"/>
+    <ellipse cx="152" cy="168" rx="16" ry="7" fill="#4f9d3a" opacity="1" transform="rotate(-18 152 168)"/><ellipse cx="250" cy="176" rx="13" ry="6" fill="#4f9d3a" opacity="1" transform="rotate(12 250 176)"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="32" font-weight="700" fill="#ffffff">番茄炒蛋</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">家常菜</text>
+</svg>

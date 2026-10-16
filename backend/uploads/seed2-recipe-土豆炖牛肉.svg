@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="土豆炖牛肉">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff9a56"/>
+      <stop offset="100%" stop-color="#e8722f"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="346.3"
+              cy="183.9"
+              r="9" fill="#ffffff" opacity="0.12"/><circle cx="85.1"
+              cy="246.7"
+              r="6" fill="#ffffff" opacity="0.12"/><circle cx="378.7"
+              cy="207.5"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="74.5"
+              cy="248.0"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="249.4"
+              cy="76.5"
+              r="5" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="218" rx="138" ry="107.64" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="210" rx="138" ry="107.64" fill="#ffffff"/>
+  <ellipse cx="200" cy="210" rx="122" ry="94.64" fill="#fafafa"/>
+  <ellipse cx="200" cy="210" rx="108" ry="83.64" fill="#f4f4f4"/>
+    <ellipse cx="200" cy="216" rx="108" ry="64" fill="#5c2a10" opacity="0.5"/>
+    <rect x="126" y="181" width="52" height="38" rx="8"
+            fill="#a9542a"/><rect x="188" y="171" width="52" height="38" rx="8"
+            fill="#a9542a"/><rect x="226" y="201" width="52" height="38" rx="8"
+            fill="#a9542a"/><rect x="154" y="225" width="52" height="38" rx="8"
+            fill="#a9542a"/><rect x="214" y="235" width="52" height="38" rx="8"
+            fill="#a9542a"/>
+    <rect x="164" y="197" width="44" height="34" rx="12"
+            fill="#f5c542"/><rect x="171" y="204" width="26" height="10" rx="5"
+            fill="#ffffff" opacity="0.45"/><rect x="204" y="191" width="44" height="34" rx="12"
+            fill="#f5c542"/><rect x="211" y="198" width="26" height="10" rx="5"
+            fill="#ffffff" opacity="0.45"/><rect x="138" y="233" width="44" height="34" rx="12"
+            fill="#f5c542"/><rect x="145" y="240" width="26" height="10" rx="5"
+            fill="#ffffff" opacity="0.45"/><rect x="190" y="245" width="44" height="34" rx="12"
+            fill="#f5c542"/><rect x="197" y="252" width="26" height="10" rx="5"
+            fill="#ffffff" opacity="0.45"/>
+    <ellipse cx="140" cy="176" rx="14" ry="7" fill="#4f9d3a" opacity="1" transform="rotate(-15 140 176)"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="29" font-weight="700" fill="#ffffff">土豆炖牛肉</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">家常菜</text>
+</svg>

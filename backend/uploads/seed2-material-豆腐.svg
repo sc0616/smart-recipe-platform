@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="豆腐">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f2cf72"/>
+      <stop offset="100%" stop-color="#cfa02c"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="252.3"
+              cy="288.3"
+              r="6" fill="#ffffff" opacity="0.12"/><circle cx="331.0"
+              cy="188.8"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="202.8"
+              cy="78.4"
+              r="4" fill="#ffffff" opacity="0.12"/><circle cx="238.7"
+              cy="287.9"
+              r="7" fill="#ffffff" opacity="0.12"/><circle cx="220.5"
+              cy="96.2"
+              r="8" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+    <ellipse cx="200" cy="272" rx="118" ry="32" fill="#ffffff"/>
+    <ellipse cx="200" cy="196" rx="74" ry="92" fill="#f2cf72"/>
+    <ellipse cx="176" cy="164" rx="22" ry="28" fill="#ffffff" opacity="0.45"/>
+    <ellipse cx="200" cy="196" rx="52" ry="66" fill="#ffffff" opacity="0.12"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="36" font-weight="700" fill="#ffffff">豆腐</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">食材 · 蛋豆</text>
+</svg>

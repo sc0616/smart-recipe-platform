@@ -54,9 +54,22 @@ pnpm-debug.log*
 backend/uploads/
 uploads/
 
+# 例外：种子配图需要随仓库分发，保证 clone 后即有完整图文效果
+!backend/uploads/
+backend/uploads/*
+!backend/uploads/seed-*.svg
+!backend/uploads/seed2-*.svg
+
 # ============================================================
 # 操作系统
 # ============================================================
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ============================================================
+# 本地历史备份（git bundle），仅作本地留档，不发布
+# ============================================================
+history-backup/
+*.bundle
+

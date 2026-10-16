@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="可乐鸡翅">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff9a56"/>
+      <stop offset="100%" stop-color="#e8722f"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="132.4"
+              cy="86.8"
+              r="9" fill="#ffffff" opacity="0.12"/><circle cx="107.1"
+              cy="275.1"
+              r="6" fill="#ffffff" opacity="0.12"/><circle cx="385.8"
+              cy="206.6"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="103.7"
+              cy="233.2"
+              r="4" fill="#ffffff" opacity="0.12"/><circle cx="313.1"
+              cy="197.3"
+              r="4" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="218" rx="138" ry="107.64" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="210" rx="138" ry="107.64" fill="#ffffff"/>
+  <ellipse cx="200" cy="210" rx="122" ry="94.64" fill="#fafafa"/>
+  <ellipse cx="200" cy="210" rx="108" ry="83.64" fill="#f4f4f4"/>
+    <ellipse cx="200" cy="214" rx="100" ry="62" fill="#5c2a10" opacity="0.5"/>
+    
+      <path d="M126 200 C130 174 190 174 194 200
+               C194 222 126 222 126 200 Z"
+            fill="#a9542a" transform="rotate(-18 160 200)"/>
+      <path d="M136 192 C140 182 168 182 172 192"
+            stroke="#c9703c" stroke-width="7" fill="none" stroke-linecap="round"
+            transform="rotate(-18 160 200)"/>
+      <path d="M202 196 C206 170 266 170 270 196
+               C270 218 202 218 202 196 Z"
+            fill="#a9542a" transform="rotate(16 236 196)"/>
+      <path d="M212 188 C216 178 244 178 248 188"
+            stroke="#c9703c" stroke-width="7" fill="none" stroke-linecap="round"
+            transform="rotate(16 236 196)"/>
+      <path d="M164 246 C168 220 228 220 232 246
+               C232 268 164 268 164 246 Z"
+            fill="#a9542a" transform="rotate(2 198 246)"/>
+      <path d="M174 238 C178 228 206 228 210 238"
+            stroke="#c9703c" stroke-width="7" fill="none" stroke-linecap="round"
+            transform="rotate(2 198 246)"/>
+      <path d="M134 254 C138 228 198 228 202 254
+               C202 276 134 276 134 254 Z"
+            fill="#a9542a" transform="rotate(-10 168 254)"/>
+      <path d="M144 246 C148 236 176 236 180 246"
+            stroke="#c9703c" stroke-width="7" fill="none" stroke-linecap="round"
+            transform="rotate(-10 168 254)"/>
+      <path d="M202 250 C206 224 266 224 270 250
+               C270 272 202 272 202 250 Z"
+            fill="#a9542a" transform="rotate(12 236 250)"/>
+      <path d="M212 242 C216 232 244 232 248 242"
+            stroke="#c9703c" stroke-width="7" fill="none" stroke-linecap="round"
+            transform="rotate(12 236 250)"/>
+    <ellipse cx="178" cy="186" rx="40" ry="14" fill="#ffffff" opacity="0.3"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="32" font-weight="700" fill="#ffffff">可乐鸡翅</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">家常菜</text>
+</svg>

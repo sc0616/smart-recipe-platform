@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="青椒炒肉丝">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff9a56"/>
+      <stop offset="100%" stop-color="#e8722f"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="233.0"
+              cy="214.1"
+              r="0" fill="#ffffff" opacity="0.12"/><circle cx="136.8"
+              cy="126.2"
+              r="-1" fill="#ffffff" opacity="0.12"/><circle cx="244.1"
+              cy="127.0"
+              r="1" fill="#ffffff" opacity="0.12"/><circle cx="228.9"
+              cy="152.4"
+              r="2" fill="#ffffff" opacity="0.12"/><circle cx="204.4"
+              cy="198.2"
+              r="0" fill="#ffffff" opacity="0.12"/>
+  
+    <ellipse cx="200" cy="300" rx="150" ry="26" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="218" rx="138" ry="107.64" fill="rgba(0,0,0,0.13)"/>
+  <ellipse cx="200" cy="210" rx="138" ry="107.64" fill="#ffffff"/>
+  <ellipse cx="200" cy="210" rx="122" ry="94.64" fill="#fafafa"/>
+  <ellipse cx="200" cy="210" rx="108" ry="83.64" fill="#f4f4f4"/>
+    <rect x="122" y="183" width="92" height="22" rx="11"
+        fill="#77b84e" transform="rotate(-22 168 194)"/>
+        <rect x="130" y="188" width="60" height="7" rx="3"
+        fill="#9ed46f" transform="rotate(-22 168 194)"/><rect x="186" y="189" width="92" height="22" rx="11"
+        fill="#77b84e" transform="rotate(18 232 200)"/>
+        <rect x="194" y="194" width="60" height="7" rx="3"
+        fill="#9ed46f" transform="rotate(18 232 200)"/><rect x="150" y="227" width="92" height="22" rx="11"
+        fill="#77b84e" transform="rotate(-8 196 238)"/>
+        <rect x="158" y="232" width="60" height="7" rx="3"
+        fill="#9ed46f" transform="rotate(-8 196 238)"/><rect x="126" y="251" width="92" height="22" rx="11"
+        fill="#77b84e" transform="rotate(20 172 262)"/>
+        <rect x="134" y="256" width="60" height="7" rx="3"
+        fill="#9ed46f" transform="rotate(20 172 262)"/><rect x="192" y="243" width="92" height="22" rx="11"
+        fill="#77b84e" transform="rotate(-16 238 254)"/>
+        <rect x="200" y="248" width="60" height="7" rx="3"
+        fill="#9ed46f" transform="rotate(-16 238 254)"/>
+    <rect x="160" y="207" width="80" height="14" rx="7"
+        fill="#c9703c" transform="rotate(8 200 214)"/><rect x="116" y="223" width="80" height="14" rx="7"
+        fill="#c9703c" transform="rotate(-14 156 230)"/><rect x="208" y="225" width="80" height="14" rx="7"
+        fill="#c9703c" transform="rotate(12 248 232)"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="29" font-weight="700" fill="#ffffff">青椒炒肉丝</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">家常菜</text>
+</svg>

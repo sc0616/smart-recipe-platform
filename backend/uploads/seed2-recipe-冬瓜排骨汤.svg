@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="冬瓜排骨汤">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff9a56"/>
+      <stop offset="100%" stop-color="#e8722f"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="148.3"
+              cy="179.3"
+              r="4" fill="#ffffff" opacity="0.12"/><circle cx="213.5"
+              cy="154.3"
+              r="1" fill="#ffffff" opacity="0.12"/><circle cx="259.9"
+              cy="202.8"
+              r="-1" fill="#ffffff" opacity="0.12"/><circle cx="121.5"
+              cy="218.0"
+              r="1" fill="#ffffff" opacity="0.12"/><circle cx="268.4"
+              cy="188.9"
+              r="-1" fill="#ffffff" opacity="0.12"/>
+  
+    
+  <ellipse cx="200" cy="288" rx="142" ry="20" fill="rgba(0,0,0,0.13)"/>
+  <path d="M68 194 L332 194
+           C332 292 262 322 200 322
+           C138 322 68 292 68 194 Z"
+        fill="#fbfbfb"/>
+  <ellipse cx="200" cy="194" rx="132" ry="26" fill="#ffffff"/>
+  <ellipse cx="200" cy="196" rx="120" ry="20" fill="#f2e6cf"/>
+    <rect x="136" y="178" width="60" height="40" rx="10"
+        fill="#eef7ea"/><rect x="208" y="182" width="60" height="40" rx="10"
+        fill="#eef7ea"/><rect x="170" y="204" width="60" height="40" rx="10"
+        fill="#eef7ea"/>
+    <rect x="168" y="173" width="56" height="26" rx="8"
+        fill="#a9542a"/><rect x="124" y="215" width="56" height="26" rx="8"
+        fill="#a9542a"/><rect x="220" y="219" width="56" height="26" rx="8"
+        fill="#a9542a"/>
+    <ellipse cx="214" cy="168" rx="22" ry="8" fill="#4f9d3a" opacity="1" transform="rotate(-10 214 168)"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="29" font-weight="700" fill="#ffffff">冬瓜排骨汤</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">家常菜</text>
+</svg>

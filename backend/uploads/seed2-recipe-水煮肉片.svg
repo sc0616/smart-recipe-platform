@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="水煮肉片">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff7060"/>
+      <stop offset="100%" stop-color="#c9201c"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="341.6"
+              cy="188.2"
+              r="6" fill="#ffffff" opacity="0.12"/><circle cx="196.8"
+              cy="288.0"
+              r="8" fill="#ffffff" opacity="0.12"/><circle cx="306.9"
+              cy="273.5"
+              r="6" fill="#ffffff" opacity="0.12"/><circle cx="294.4"
+              cy="250.4"
+              r="5" fill="#ffffff" opacity="0.12"/><circle cx="180.7"
+              cy="289.0"
+              r="7" fill="#ffffff" opacity="0.12"/>
+  
+    
+  <ellipse cx="200" cy="284" rx="148" ry="20" fill="rgba(0,0,0,0.13)"/>
+  <path d="M62 190 L338 190
+           C338 288 262 318 200 318
+           C138 318 62 288 62 190 Z"
+        fill="#fbfbfb"/>
+  <ellipse cx="200" cy="190" rx="138" ry="26" fill="#ffffff"/>
+  <ellipse cx="200" cy="192" rx="126" ry="20" fill="#b8231c"/>
+    <rect x="126" y="180" width="76" height="28" rx="8"
+        fill="#a9542a" opacity="0.95" transform="rotate(-6 164 194)"/><rect x="196" y="186" width="76" height="28" rx="8"
+        fill="#a9542a" opacity="0.95" transform="rotate(-6 234 200)"/><rect x="160" y="206" width="76" height="28" rx="8"
+        fill="#a9542a" opacity="0.95" transform="rotate(-6 198 220)"/>
+    <circle cx="186" cy="176" r="5" fill="#b8231c"/><circle cx="246" cy="182" r="5" fill="#b8231c"/><circle cx="156" cy="180" r="5" fill="#b8231c"/><circle cx="214" cy="196" r="5" fill="#b8231c"/>
+    <ellipse cx="200" cy="168" rx="30" ry="7" fill="#b8231c" opacity="1" transform="rotate(-6 200 168)"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="32" font-weight="700" fill="#ffffff">水煮肉片</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">川湘菜</text>
+</svg>

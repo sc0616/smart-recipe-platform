@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400" role="img" aria-label="番茄牛腩面">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eec063"/>
+      <stop offset="100%" stop-color="#c8892a"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="400" fill="url(#bg)"/>
+  <circle cx="125.2"
+              cy="198.4"
+              r="2" fill="#ffffff" opacity="0.12"/><circle cx="281.1"
+              cy="193.2"
+              r="3" fill="#ffffff" opacity="0.12"/><circle cx="133.7"
+              cy="174.6"
+              r="0" fill="#ffffff" opacity="0.12"/><circle cx="215.6"
+              cy="152.3"
+              r="-1" fill="#ffffff" opacity="0.12"/><circle cx="220.6"
+              cy="158.5"
+              r="1" fill="#ffffff" opacity="0.12"/>
+  
+    
+  <ellipse cx="200" cy="280" rx="146" ry="20" fill="rgba(0,0,0,0.13)"/>
+  <path d="M64 186 L336 186
+           C336 284 262 314 200 314
+           C138 314 64 284 64 186 Z"
+        fill="#fbfbfb"/>
+  <ellipse cx="200" cy="186" rx="136" ry="26" fill="#ffffff"/>
+  <ellipse cx="200" cy="188" rx="124" ry="20" fill="#e07a5a"/>
+    <path d="M120 182 C162 170 238 170 280 182" stroke="#eccf8f"
+        stroke-width="10" fill="none" stroke-linecap="round"/><path d="M120 196 C162 184 238 184 280 196" stroke="#eccf8f"
+        stroke-width="10" fill="none" stroke-linecap="round"/><path d="M120 210 C162 198 238 198 280 210" stroke="#eccf8f"
+        stroke-width="10" fill="none" stroke-linecap="round"/><path d="M120 224 C162 212 238 212 280 224" stroke="#eccf8f"
+        stroke-width="10" fill="none" stroke-linecap="round"/>
+    <rect x="138" y="163" width="52" height="26" rx="7" fill="#a9542a"/><rect x="214" y="167" width="52" height="26" rx="7" fill="#a9542a"/>
+    <ellipse cx="200" cy="168" rx="24" ry="8" fill="#ec5a43" opacity="1" transform="rotate(-8 200 168)"/><ellipse cx="150" cy="190" rx="18" ry="7" fill="#4f9d3a" opacity="1" transform="rotate(-14 150 190)"/>
+  <rect x="0" y="306" width="400" height="94" fill="#000000" opacity="0.34"/>
+  <text x="200" y="350" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="29" font-weight="700" fill="#ffffff">番茄牛腩面</text>
+  <text x="200" y="378" text-anchor="middle"
+        font-family="'Microsoft YaHei','PingFang SC','Noto Sans CJK SC',sans-serif"
+        font-size="14" fill="#ffffff" opacity="0.85">面点主食</text>
+</svg>
